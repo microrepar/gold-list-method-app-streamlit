@@ -1,0 +1,7 @@
+"""django module
+"""
+from .djangoapi_pagesection_repository import ApiPageSectionRepository
+from .djangoapi_notebook_repository import ApiNotebookRepository
+from .djangoapi_sentencelabel_repository import ApiSentenceLabelRepository
+from .djangoapi_sentencetranslation_repository import ApiSentenceTranslationRepository
+from .djangoapi_user_repository import ApiUserRepository
