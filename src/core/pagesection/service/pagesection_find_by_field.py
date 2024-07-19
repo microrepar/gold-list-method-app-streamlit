@@ -33,14 +33,14 @@ class PageSectionFindByField(UseCase):
                 ps.sentencelabels = sl_list
 
                 messages = resp.get('messages')
-                result.error_msg = messages.get('error')
+                result.update_messages(messages)
 
                 if not entity.notebook:
                     resp = nt_find_by_field_service.execute(ps.notebook).to_dict()
                     nt_list = resp.get('entities')
 
                     messages = resp.get('messages')
-                    result.error_msg = messages.get('error')
+                    result.update_messages(messages)
 
                     if nt_list:
                         ps.notebook = nt_list[-1]

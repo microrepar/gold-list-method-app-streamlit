@@ -24,6 +24,23 @@ class ApiPageSectionRepository(PageSectionRepository):
         }
         self.querystring = {}
 
+    def registry(self, entity: PageSection) -> PageSection:
+        url = self.url
+        pagesection_dict = entity.to_dict()
+        pagesection_dict.pop('id')
+        pagesection_dict.pop('updated_at')
+        
+        self.querystring.update(pagesection_dict)
+        response = requests.post(url, headers=self.headers, json=self.querystring)
+        response.raise_for_status()
+        response_json = response.json()
+        
+        entity.id = response_json.get('id')
+        entity.created_at = string_to_date(response_json.get('created_at'))
+        entity.updated_at = string_to_date(response_json.get('updated_at'))
+        entity.page_number = response_json.get('page_number')
+        return entity
+
     def get_all(self) -> List[PageSection]:
         return []
     
@@ -94,8 +111,6 @@ class ApiPageSectionRepository(PageSectionRepository):
         response_json = response.json()
         return response_json.get('last_pagenumber')
 
-
-
     def update(self, entity: PageSection) -> PageSection:
         pass
 
@@ -110,8 +125,8 @@ class ApiPageSectionRepository(PageSectionRepository):
         for sentencetranslation_dict in response_json:
             sentencetranslation = SentenceTranslation(
                 id_=sentencetranslation_dict.get('id'),
-                created_at=sentencetranslation_dict.get('created_at'),                
-                updated_at=sentencetranslation_dict.get('updated_at'),                
+                created_at=string_to_date(sentencetranslation_dict.get('created_at')),                
+                updated_at=string_to_date(sentencetranslation_dict.get('updated_at')),                
                 foreign_language=sentencetranslation_dict.get('foreign_language_sentence'),
                 mother_tongue=sentencetranslation_dict.get('mother_language_sentence'),
                 foreign_idiom=sentencetranslation_dict.get('foreign_language_idiom'),
@@ -123,25 +138,12 @@ class ApiPageSectionRepository(PageSectionRepository):
     def validate_sentences(self, entity: PageSection) -> List[str]:
         return []
     
-    def remove(self, entity: PageSection):
-        pass
-
-    def registry(self, entity: PageSection) -> PageSection:
-        url = self.url
-        pagesection_dict = entity.to_dict()
-        pagesection_dict.pop('id')
-        pagesection_dict.pop('updated_at')
-        body = self.querystring.update(pagesection_dict)
-        response = requests.post(url, headers=self.headers, json=body)
-        response_json = response.json()
-        if response.status_code != 200:
-            raise Exception(response_json.get('message'))
-
-        entity.id = response_json.get('id')
-        entity.created_at = response_json.get('created_at')
-        entity.updated_at = response_json.get('updated_at')
-        entity.page_number = response_json.get('page_number')
-        return entity
+    def remove(self, entity: PageSection) -> bool:
+        url = self.url + f'{entity.id}'
+        response = requests.delete(url)
+        response.raise_for_status()
+        success = response.json().get('success')
+        return success
 
     def update_sentencelabel(self, entity: PageSection):
         pass

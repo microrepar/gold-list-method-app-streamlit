@@ -17,17 +17,23 @@ class SentenceLabelFindByField(UseCase):
     def execute(self, entity: SentenceLabel) -> Result:
         
         result = Result()
-
+        
+        sl = None
         try:
             sentencelabel_list: List[SentenceLabel] = self.repository.find_by_field(entity)
+
+            if not sentencelabel_list:
+                result.error_msg = f'SentenceLabelFindByField service error:  No sentence labels found to {entity}'
+                return result
             
-            from src.core.sentencetranslation import SentenceTranslationFindByField
+            from src.core.sentencetranslation import SentenceTranslationFindByField, SentenceTranslation
             from src.external.persistence.djangoapi import ApiSentenceTranslationRepository
             st_find_by_field = SentenceTranslationFindByField(repository=ApiSentenceTranslationRepository())
+
             
             for sl in sentencelabel_list:
-                
-                resp = st_find_by_field.execute(sl.sentencetranslation).to_dict()
+                st_filter = SentenceTranslation(id_=sl.sentencetranslation.id)
+                resp = st_find_by_field.execute(st_filter).to_dict()
                 st_list = resp.get('entities')
 
                 messages = resp.get('messages')
@@ -42,7 +48,8 @@ class SentenceLabelFindByField(UseCase):
                 
             result.entities = sentencelabel_list
         except Exception as error:
-            result.error_msg = f'SentenceLabelFindByField service error: SentenceLabel(id_={entity.pagesection.id}) - {sl.sentencetranslation} - {str(error)}'
+            result.error_msg = (f'SentenceLabelFindByField service error: '
+                                f'SentenceLabel(id_= {entity.pagesection.id}) - {str(error)}')
             return result 
 
         return result

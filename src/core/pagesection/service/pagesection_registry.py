@@ -26,7 +26,7 @@ class PageSectionRegistry(UseCase):
         if has_pagesection:
             result.error_msg = (f'Headlist cannot be registred because '
                           f'there is a headlist created at same date {entity.created_at}.')
-        
+
         next_page_number = self.repository.get_last_page_number(entity) + 1
         entity.page_number = next_page_number
         entity.set_distillation_at()        
@@ -35,32 +35,61 @@ class PageSectionRegistry(UseCase):
         result.error_msg = entity.validate()
 
         if result.qty_msg() > 0:
-            result.entities = entity
             return result        
 
         new_entity = None
         clone_entity = None
+        
+        from src.core.sentencelabel import SentenceLabelRegistryService
+        from src.external.persistence.djangoapi import ApiSentenceLabelRepository
+        sl_registry_service = SentenceLabelRegistryService(ApiSentenceLabelRepository())
+
         try:
             if entity.group == Group.A:
                 clone_entity = entity.clone()
-                clone_entity.distillation_at = entity.created_at
+                clone_entity.distillation_at = clone_entity.created_at
                 clone_entity.distillated = True
-                for sl in clone_entity.sentencelabels:
-                    sl.translation = ''
-                    sl.memorialized = False
-
-                clone_entity.id = str(uuid4())
+                
                 clone_entity = self.repository.registry(entity=clone_entity)
                 
-                clone_entity = self.repository.registry_sentencelabels(entity=clone_entity)
+                sentencelabel_list = []
+                for sl in clone_entity.sentencelabels:
+                    sl.pagesection = clone_entity
+                    sl.memorialized = False
+                    sl.translation = ''
 
-            entity.id = str(uuid4())
+                    resp = sl_registry_service.execute(sl).to_dict()
+
+                    entities = resp.get('entities')
+                    sentencelabel_list += entities
+                    
+                    messages = resp.get('messages')
+                    result.update_messages(messages)
+
+                    if 'error' in messages:
+                        self.repository.remove(clone_entity)
+                        return result
+                clone_entity.sentencelabels = sentencelabel_list
+            
             new_entity = self.repository.registry(entity=entity)
-            was_updated = self.repository.update_sentencelabel(entity=new_entity)
-            if not was_updated:
-                result.warning_msg = 'There was a problem updating the table associated between PageSection and Sentence'
+            
+            sentencelabel_list = []
+            for sl in clone_entity.sentencelabels:
+                sl.pagesection = new_entity
+
+                resp = sl_registry_service.execute(sl).to_dict()
+
+                entities = resp.get('entities')
+                sentencelabel_list += entities
                 
-            result.entities = new_entity
+                messages = resp.get('messages')
+                result.update_messages(messages)
+
+                if 'error' in messages:
+                    self.repository.remove(clone_entity)
+                    self.repository.remove(new_entity)
+                    return result                
+            new_entity.sentencelabels = sentencelabel_list
 
         except Exception as error:
             if clone_entity is not None:
@@ -71,4 +100,5 @@ class PageSectionRegistry(UseCase):
             result.entities = entity
             return result        
 
+        result.entities = new_entity
         return result

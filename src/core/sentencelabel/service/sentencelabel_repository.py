@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import List, Protocol, runtime_checkable
+from typing import List, Optional, Protocol, runtime_checkable
 
 from src.core.shared.repository import Repository
 
@@ -25,7 +25,7 @@ class SentenceLabelRepository(Repository, Protocol):
         """
     
     @abstractmethod
-    def find_by_field(self, entity: SentenceLabel) -> SentenceLabel:
+    def find_by_field(self, entity: SentenceLabel) -> List[Optional[SentenceLabel]]:
         """Get by id a registred SentenceLabel in the database
         """
     

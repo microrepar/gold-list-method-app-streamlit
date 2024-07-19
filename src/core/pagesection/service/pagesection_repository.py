@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import List, Protocol, runtime_checkable
+from typing import List, Optional, Protocol, runtime_checkable
 
 from src.core.shared.repository import Repository
 
@@ -25,7 +25,7 @@ class PageSectionRepository(Repository, Protocol):
         """
     
     @abstractmethod
-    def find_by_field(self, entity: PageSection) -> List[PageSection]:
+    def find_by_field(self, entity: PageSection) -> List[Optional[PageSection]]:
         """Get by id a registred PageSection in database
         """
     

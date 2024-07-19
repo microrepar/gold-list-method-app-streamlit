@@ -45,6 +45,20 @@ class User(Entity):
             ')'
         )
     
+    def to_dict_with_prefix(self):
+        return {
+            'user_id_': self.id,
+            'user_created_at': self.created_at,
+            'user_status': self.status,
+            'user_name': self.name,
+            'user_age': self.age,
+            'user_email': self.email,
+            'user_profile': self.profile,
+            'user_username': self.username,
+            'user_password': self.password,
+            'user_repeat_password': self.repeat_password,
+        }
+    
     def data_to_dataframe(self):
         return [
             {

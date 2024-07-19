@@ -15,5 +15,5 @@ class SentenceLabelRemove(UseCase):
     def execute(self, entity: SentenceLabel) -> Result:
         
         result = Result()        
-
+        result.error_msg = 'SentenceLabelRemove service is not implemented.'
         return result

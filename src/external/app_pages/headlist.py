@@ -222,7 +222,6 @@ if st.session_state.username:
                         "sentencetranslation_mother_tongue": sentencetranslation_dict["mother_tongue"],
                         "sentencetranslation_foreign_idiom": sentencetranslation_dict["foreign_idiom"],
                         "sentencetranslation_mother_idiom": sentencetranslation_dict["mother_idiom"],
-                        "sentencetranslation_created_at": sentencetranslation_dict["created_at"],
                     }
                 }
                 sentencelabel_dict_list.append(label_dict)
@@ -232,10 +231,7 @@ if st.session_state.username:
             ###############################################################
             request = {
                 "resource": "/pagesection/registry",
-                "pagesection_notebook": {
-                    "notebook_id_": notebook.id,
-                    "notebook_days_period": notebook.days_period,
-                },
+                "pagesection_notebook": notebook.to_dict_with_prefix(),
                 "pagesection_group": Group.HEADLIST,
                 "pagesection_created_at": selected_day,
                 "pagesection_sentencelabels": sentencelabel_dict_list,

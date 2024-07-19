@@ -23,12 +23,28 @@ class ApiSentenceLabelRepository(SentenceLabelRepository):
             'Content-Type': 'application/json',
         }
         self.querystring = {}
+    
+    def registry(self, entity: SentenceLabel) -> SentenceLabel:
+        url = self.url
+        sentencelabel_dict = entity.to_dict()
+        sentencelabel_dict.pop('id')
+        sentencelabel_dict.pop('updated_at')
+        sentencelabel_dict.pop('created_at')
+
+        self.querystring.update(sentencelabel_dict)
+        response = requests.post(url, headers=self.headers, json=self.querystring)
+        response.raise_for_status()
+        response_json = response.json()
+
+        entity.id = response_json.get('id')
+        entity.updated_at = string_to_date(response_json.get('updated_at'))
+        entity.created_at = string_to_date(response_json.get('created_at'))
+        entity.memorialized = response_json.get('memorialized')
+        entity.translation = response_json.get('translation')
+        return entity
 
     def get_all(self) -> List[SentenceLabel]:
         return []
-    
-    def registry(self, entity: SentenceLabel) -> SentenceLabel:
-        pass
     
     def get_by_id(self, entity: SentenceLabel) -> SentenceLabel:
         pass
@@ -65,7 +81,7 @@ class ApiSentenceLabelRepository(SentenceLabelRepository):
                 translation=sentencelabel_dict.get('translation'),
                 memorialized=sentencelabel_dict.get('memorialized'),
                 pagesection=entity.pagesection,
-                sentencetranslation=SentenceTranslation(id_=sentencelabel_dict.get('sentence_translation'))
+                sentencetranslation=SentenceTranslation(id_=sentencelabel_dict.get('sentencetranslation'))
             )
             sentencelabel_list.append(sentencelabel)
         return sentencelabel_list

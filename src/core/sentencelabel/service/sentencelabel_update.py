@@ -15,5 +15,5 @@ class SentenceLabelUpdate(UseCase):
     def execute(self, entity: SentenceLabel) -> Result:
         
         result = Result()        
-
+        result.error_msg = 'SentenceLabelUpdate service is not implemented.'
         return result

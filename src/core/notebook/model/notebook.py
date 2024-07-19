@@ -14,7 +14,7 @@ class Notebook(Entity):
                  updated_at         : datetime.date = None,
                  sentence_list_size : int = None,
                  days_period        : int = None,
-                 pagesection_list  : List['PageSection'] = list(),
+                 pagesection_list  : List['PageSection'] = list(), # type: ignore
                  foreign_idiom      : str = None,
                  mother_idiom       : str = None,
                  user               : User = None):
@@ -78,6 +78,19 @@ class Notebook(Entity):
                 'foreign_idiom'      : self.foreign_idiom,
                 'mother_idiom'       : self.mother_idiom,
                 'user_id'            : self.user.id,
+            }
+    
+    def to_dict_with_prefix(self):
+        return {
+                'notebook_id_'                : self.id,
+                'notebook_name'               : self.name,
+                'notebook_created_at'         : self.created_at,
+                'notebook_updated_at'         : self.updated_at,
+                'notebook_sentence_list_size' : self.sentence_list_size,
+                'notebook_days_period'        : self.days_period,
+                'notebook_foreign_idiom'      : self.foreign_idiom,
+                'notebook_mother_idiom'       : self.mother_idiom,
+                'notebook_user'               : self.user.to_dict_with_prefix(),
             }
     
     def __str__(self) -> str:

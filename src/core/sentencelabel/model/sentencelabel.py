@@ -35,36 +35,36 @@ class SentenceLabel(Entity):
     def data_to_dataframe(self):
         return [
             {
-                'id'                   : self.id,
-                'created_at'           : self.created_at,
-                'updated_at'           : self.updated_at,
+                'id'                  : self.id,
+                'created_at'          : self.created_at,
+                'updated_at'          : self.updated_at,
                 'sentencetranslation' : self.sentencetranslation.mother_language_sentence,
                 'pagesection'         : self.pagesection.id,
-                'translation'          : self.translation,
-                'memorialized'         : self.memorialized,
+                'translation'         : self.translation,
+                'memorialized'        : self.memorialized,
             }
         ]
     
-    def data_to_redis(self):
+    def to_dict(self):
         return {
-            'id'                   : self.id,
-            'created_at'           : self.created_at,
-            'updated_at'           : self.updated_at,
-            'sentencetranslation' : self.sentencetranslation,
-            'pagesection'         : self.pagesection,
-            'translation'          : self.translation,
-            'memorialized'         : self.memorialized,
+            'id'                     : self.id,
+            'created_at'             : self.created_at,
+            'updated_at'             : self.updated_at,
+            'sentencetranslation_id' : self.sentencetranslation.id,
+            'pagesection_id'         : self.pagesection.id,
+            'translation'            : self.translation,
+            'memorialized'           : self.memorialized,
         }
     
     def __str__(self):
         return (
             f'SentenceLabel('
-                f'id_={self.id}',
-                f'created_at={self.created_at}',
-                f'updated_at={self.updated_at}',
-                f'sentencetranslation={self.sentencetranslation}',
-                f'pagesection={self.pagesection}',
-                f'translation={self.translation}',
+                f'id_={self.id}, '
+                f'created_at={self.created_at}, '
+                f'updated_at={self.updated_at}, '
+                f'sentencetranslation={self.sentencetranslation}, '
+                f'pagesection={self.pagesection}, '
+                f'translation={self.translation}, '
                 f'memorialized={self.memorialized}'
             f')'
         )

@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import List, Protocol, runtime_checkable
+from typing import List, Optional, Protocol, runtime_checkable
 
 from src.core.shared.repository import Repository
 
@@ -25,6 +25,6 @@ class NotebookRepository(Repository, Protocol):
         """
     
     @abstractmethod
-    def find_by_field(self, entity: Notebook) -> List[Notebook]:
+    def find_by_field(self, entity: Notebook) -> List[Optional[Notebook]]:
         """Find by id registred notebooks in database
         """

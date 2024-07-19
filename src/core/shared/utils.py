@@ -1,27 +1,32 @@
 import datetime
+from dateutil import parser
 
 
-def date_to_string(date: datetime.date) -> str:
-    if date is not None:
-        return str(date)
+def date_to_string(date_obj: datetime.date, format='%Y-%m-%d') -> str:
+    if date_obj is not None:
+        return date_obj.strftime(format)
 
+
+def datetime_to_string(datetime_obj: datetime.datetime, format='%d/%m/%Y %H:%M:%S') -> str:
+    if datetime_obj is not None:
+        return datetime_obj.strftime(format)
+    
 
 def string_to_date(string: str) -> datetime.date:
-    try:
-        date = datetime.datetime.strptime(string, '%Y-%m-%d').date()
-        return date
-    except Exception as error:
-        return None
-
-
-def datetime_to_string(date: datetime.datetime) -> str:
-    if date is not None:
-        return str(date)
+    formats = ['%Y-%m-%dT%H:%M:%S.%fZ', '%d/%m/%Y', '%Y-%m-%d']
+    for format in formats:
+        try:
+            datetime_obj = datetime.datetime.strptime(string, format)
+            return datetime_obj.date()
+        except ValueError: ...
+            
     
 
 def string_to_datetime(string: str) -> datetime.date:
-    try:
-        date = datetime.datetime.strptime(string, '%Y-%m-%d')
-        return date
-    except Exception as error:
-        return None
+    formats = ['%Y-%m-%dT%H:%M:%S.%fZ', '%d/%m/%Y', '%Y-%m-%d']
+    for formato in formats:
+        try:
+            datetime_obj = datetime.datetime.strptime(string, format)
+            return datetime_obj
+        except ValueError:
+            return None

@@ -16,7 +16,5 @@ class SentenceTranslationGetAll(UseCase):
     def execute(self, entity: SentenceTranslation) -> Result:
         
         result = Result()
-
         result.error_msg = 'SentenceTranslationGetAll service is not implemented.'
-        
         return result

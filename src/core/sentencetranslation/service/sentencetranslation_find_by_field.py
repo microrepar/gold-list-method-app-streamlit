@@ -16,7 +16,7 @@ class SentenceTranslationFindByField(UseCase):
     def execute(self, entity: SentenceTranslation) -> Result:        
         result = Result()
         
-        try:
+        try:                        
             sentencetranslation_list = self.repository.find_by_field(entity)
             result.entities = sentencetranslation_list
 

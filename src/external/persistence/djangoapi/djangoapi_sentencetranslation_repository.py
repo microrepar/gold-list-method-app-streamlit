@@ -24,9 +24,6 @@ class ApiSentenceTranslationRepository(SentenceTranslationRepository):
         }
         self.querystring = {}
 
-    def get_all(self) -> List[SentenceTranslation]:
-        return []
-    
     def registry(self, entity: SentenceTranslation) -> SentenceTranslation:
         url = self.url
         sentencetranslation_dict = entity.to_dict()
@@ -50,6 +47,9 @@ class ApiSentenceTranslationRepository(SentenceTranslationRepository):
         )
         return sentencetranslation
     
+    def get_all(self) -> List[SentenceTranslation]:
+        return []
+    
     def get_by_id(self, entity: SentenceTranslation) -> SentenceTranslation:
         pass
 
@@ -60,10 +60,14 @@ class ApiSentenceTranslationRepository(SentenceTranslationRepository):
         for attr, value in filters.items():
             if bool(value) is False:
                 continue
-            if attr in 'foreign_language':
-                attr = 'foreign_language_sentence'                
-            elif attr in 'id':
+            if attr in 'id':
                 ...
+            elif attr in 'foreign_language':
+                attr = 'foreign_language_sentence'                
+            elif attr in 'foreign_idiom':
+                attr = 'foreign_language_idiom'                
+            elif attr in 'mother_idiom':
+                attr = 'mother_language_idiom'                
             else:
                 raise Exception(
                     f'This field "{attr}" cannot be used to find SentenceTranslation objects!'

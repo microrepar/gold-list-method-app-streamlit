@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import List, Protocol, runtime_checkable
+from typing import List, Optional, Protocol, runtime_checkable
 
 from src.core.shared.repository import Repository
 from src.core.user import User
@@ -24,7 +24,7 @@ class UserRepository(Repository, Protocol):
         """
     
     @abstractmethod
-    def find_by_field(self, entity: User) -> List[User]:
+    def find_by_field(self, entity: User) -> List[Optional[User]]:
         """_summary_
         """
     

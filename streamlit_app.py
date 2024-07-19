@@ -10,9 +10,9 @@ from yaml.loader import SafeLoader
 
 from src.adapters.controller import Controller
 
-# import ptvsd
-# ptvsd.enable_attach(address=('localhost', 5678))
-# ptvsd.wait_for_attach() # Only include this line if you always want to attach the debugger
+import ptvsd
+ptvsd.enable_attach(address=('localhost', 5678))
+ptvsd.wait_for_attach() # Only include this line if you always want to attach the debugger
 
 load_dotenv()
 

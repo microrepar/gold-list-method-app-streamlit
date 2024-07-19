@@ -113,3 +113,13 @@ class Result:
             'entities': self._entities,
             'objects': self._objects,
         }
+    
+    def update_messages(self, messages) -> None:
+        if 'error' in messages:
+            self.error_msg = messages['error']
+        if 'warning' in messages:
+            self.warning_msg = messages['warning']
+        if 'info' in messages:
+            self.info_msg = messages['info']
+        if 'success' in messages:
+            self.success_msg = messages['success']

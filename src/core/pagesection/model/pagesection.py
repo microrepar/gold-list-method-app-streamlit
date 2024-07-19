@@ -181,8 +181,8 @@ class PageSection(Entity):
             'notebook_id'         : self.notebook.id,
             'page_number'         : self.page_number,
             'group'               : self.group.value,
-            'distillation_at'     : date_to_string(self.distillation_at),
             'distillated'         : self._distillated,
+            'distillation_at'     : date_to_string(self.distillation_at),
             'distillation_actual' : date_to_string(self._distillation_actual),
             'created_by_id'       : created_by,
         }

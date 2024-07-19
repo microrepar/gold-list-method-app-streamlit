@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import List, Protocol, runtime_checkable
+from typing import List, Optional, Protocol, runtime_checkable
 
 from src.core.shared.repository import Repository
 
@@ -25,7 +25,7 @@ class SentenceTranslationRepository(Repository, Protocol):
         """
     
     @abstractmethod
-    def find_by_field(self, entity: SentenceTranslation) -> SentenceTranslation:
+    def find_by_field(self, entity: SentenceTranslation) -> List[Optional[SentenceTranslation]]:
         """Get by id a registred SentenceTranslation in the database
         """
     
