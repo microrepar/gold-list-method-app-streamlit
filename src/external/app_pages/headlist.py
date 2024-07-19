@@ -16,7 +16,7 @@ from src.core.pagesection import Group
 st.set_page_config(layout="wide")
 
 
-placeholder_messages = st.container()
+placeholder_container_msg = st.container()
 controller = Controller()
 
 # Either this or add_indentation() MUST be called on each page in your
@@ -42,61 +42,69 @@ authenticator = stauth.Authenticate(
 
 st.session_state["username"] = st.session_state["username"]
 
-if st.session_state.username:
-    
-    ######################################################
-    # FIND BY FIELD - USER
-    ######################################################
+if st.session_state.username:    
+    #############################################################
+    # REQUEST USER FIND  BY FIELD
+    #############################################################
     request = {
-        "resource": "/user/find_by_field",
-        "user_username": st.session_state.username,
+        'resource': '/notebook',
     }
     resp = controller(request=request)
-    messages = resp["messages"]
-    entities = resp["entities"]
-
-    if "error" in messages:
-        placeholder_messages.error("\n  - ".join(messages["error"]), icon="🚨")
-        user_id = None
-    else:
-        user_id = entities[-1].id
-
-    if "info" in messages:
-        placeholder_messages.info("\n  - ".join(messages["info"]), icon="⚠️")
-    if "warning" in messages:
-        placeholder_messages.warning("\n  - ".join(messages["warning"]), icon="ℹ️")
-    if "success" in messages:
-        placeholder_messages.success("\n  - ".join(messages["success"]), icon="✅")
-    ######################################################
-    
-    ######################################################
-    # FIND BY FIELD - NOTEBOOK
-    ######################################################
-    request = {
-        "resource": "/notebook/find_by_field",
-        "notebook_user": {"user_id_": user_id},
-    }
-    resp = controller(request=request)
-    notebook_list = resp.get("entities")
-    messages = resp.get("messages")
-    ######################################################
+    messages = resp['messages']
+    entities = resp['entities']
+    notebook_list = entities
+    # RESPONSE MESSAGES##########################################        
+    if 'error' in messages:
+        for msg in messages['error']:
+            placeholder_container_msg.error(msg, icon='🚨')
+    if 'info' in messages:
+        placeholder_container_msg.info('\n  - '.join(messages['info']), icon='⚠️')
+    if 'warning' in messages:
+        placeholder_container_msg.warning('\n  - '.join(messages['warning']), icon='ℹ️')
+    if 'success' in messages:
+        placeholder_container_msg.success('\n  - '.join(messages['success']), icon='✅')
+    #############################################################
+    #############################################################
 
     notebook_dict = {n.name: n for n in notebook_list}
 
     if "error" in messages:
-        placeholder_messages.error("\n  - ".join(messages["error"]), icon="🚨")
+        placeholder_container_msg.error("\n  - ".join(messages["error"]), icon="🚨")
     if "info" in messages:
-        placeholder_messages.info("\n  - ".join(messages["info"]), icon="ℹ️")
+        placeholder_container_msg.info("\n  - ".join(messages["info"]), icon="ℹ️")
     if "warning" in messages:
-        placeholder_messages.warning("\n  - ".join(messages["warning"]), icon='⚠️')
+        placeholder_container_msg.warning("\n  - ".join(messages["warning"]), icon='⚠️')
 
     if "success" in messages:
-        placeholder_messages.success("\n  - ".join(messages["success"]), icon="✅")
+        placeholder_container_msg.success("\n  - ".join(messages["success"]), icon="✅")
 
     if notebook_list:
         selected_notebook = st.sidebar.selectbox("**NOTEBOOK:**", notebook_dict.keys())
 
         notebook: Notebook = notebook_dict.get(selected_notebook)
+        #############################################################
+        # REQUEST PAGESECTION FIND BY FIELD CLEAN
+        #############################################################
+        request = {
+            'resource': '/pagesection/find_by_field_clean',
+            'pagesection_notebook': notebook.to_dict_with_prefix(),
+        }
+        resp = controller(request=request)
+        messages = resp['messages']
+        entities = resp['entities']
+        notebook.pagesection_list = entities
+        # RESPONSE MESSAGES##########################################        
+        if 'error' in messages:
+            for msg in messages['error']:
+                placeholder_container_msg.error(msg, icon='🚨')
+        if 'info' in messages:
+            placeholder_container_msg.info('\n  - '.join(messages['info']), icon='⚠️')
+        if 'warning' in messages:
+            placeholder_container_msg.warning('\n  - '.join(messages['warning']), icon='ℹ️')
+        if 'success' in messages:
+            placeholder_container_msg.success('\n  - '.join(messages['success']), icon='✅')
+        #############################################################
+        #############################################################
 
         st.subheader(f"{notebook.name.upper()} NOTEBOOK")
         selected_day = st.sidebar.date_input(
@@ -119,34 +127,35 @@ if st.session_state.username:
             #############################################################
             ### FIND SENTENCES BY NP GROUP
             #############################################################
+            # FrontController
             request = {
                 "resource": "pagesection/get_sentences_by_group",
                 "pagesection_group": Group.NEW_PAGE,
                 "pagesection_notebook": {"notebook_id_": notebook.id},
             }
-
+            #############################################################
             resp = controller(request=request)
             sentence_list = resp.get("entities")
             messages = resp.get("messages")
 
             if "error" in messages:
-                with placeholder_messages.container():
+                with placeholder_container_msg.container():
                     for msg in messages["error"]:
                         st.error(msg, icon="🚨")
             elif sentence_list:
-                placeholder_messages.info(
+                placeholder_container_msg.info(
                     f"{len(sentence_list)} sentences were added to table bellow and are free to compose a new headlist.",
                     icon="ℹ️",
                 )
 
             if "info" in messages:
-                placeholder_messages.info("\n  - ".join(messages["info"]), icon="ℹ️")
+                placeholder_container_msg.info("\n  - ".join(messages["info"]), icon="ℹ️")
             if "warning" in messages:
-                placeholder_messages.warning(
+                placeholder_container_msg.warning(
                     "\n  - ".join(messages["warning"]), icon='⚠️'
                 )
             if "success" in messages:
-                placeholder_messages.success(
+                placeholder_container_msg.success(
                     "\n  - ".join(messages["success"]), icon="✅"
                 )
             #############################################################
@@ -246,7 +255,7 @@ if st.session_state.username:
             # FeedBack
             if "error" in messages:
                 for msg in messages["error"]:
-                    placeholder_messages.error(msg, icon="🚨")
+                    placeholder_container_msg.error(msg, icon="🚨")
 
                 st.toast("Something went wrong!")
             elif entities:
@@ -254,20 +263,20 @@ if st.session_state.username:
                 placeholder_sentences_sheet.success(
                     f"{entities[-1]} was inserted successfully!"
                 )
-                placeholder_messages.success(
+                placeholder_container_msg.success(
                     f"{entities[-1]} was inserted successfully!"
                 )
                 placehold_btn_insert.empty()
                 st.toast("Page section was inserted successfully.")
 
             if "info" in messages:
-                placeholder_messages.info("\n  - ".join(messages["info"]), icon="ℹ️")
+                placeholder_container_msg.info("\n  - ".join(messages["info"]), icon="ℹ️")
             if "warning" in messages:
-                placeholder_messages.warning(
+                placeholder_container_msg.warning(
                     "\n  - ".join(messages["warning"]), icon='⚠️'
                 )
             if "success" in messages:
-                placeholder_messages.success(
+                placeholder_container_msg.success(
                     "\n  - ".join(messages["success"]), icon="✅"
                 )
             ###############################################################
@@ -299,7 +308,7 @@ if st.session_state.username:
             columns = [
                 "created_at",
                 "id",
-                "page_number",
+                "page",
                 "group",
                 "distillation_at",
                 "distillation_actual",

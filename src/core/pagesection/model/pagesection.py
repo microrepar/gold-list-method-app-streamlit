@@ -18,6 +18,46 @@ class Group(Enum):
     NP       = 'NP'
     REMOVED  = 'RM'
 
+SEQUENCE_GROUP = {
+    'A'  : '1st headlist',
+    'B'  : '2nd distillation',
+    'C'  : '3rd distillation',
+    'D'  : '4th distillation',
+    'NP' : '🔁 repet headlist'
+}
+
+AFTER_SEQUENCE_GROUP = {
+    'B'  : ' of A',
+    'C'  : ' of B',
+    'D'  : ' of C',
+    'NP' : ' of D'
+}
+
+DIST_GROUP_COLOR = {
+    'A'  : '#9B9B9B',
+    'B'  : '#9B9B9B',
+    'H'  : '#9B9B9B',
+    'C'  : '#9B9B9B',
+    'D'  : '#9B9B9B',
+    'NP' : '#9B9B9B'
+}
+
+GROUP_COLOR = {
+    'A'  : '#FF0000',
+    'B'  : '#00A81D',
+    'C'  : '#002BFF',
+    'D'  : '#B300B7',
+    'NP' : '#000000'
+}
+
+GROUP_LABEL = {
+    'A'  : 'HeadList',
+    'B'  : 'Group B List',
+    'C'  : 'Group C List',
+    'D'  : 'Group D List',
+    'NP' : 'Group NP List'
+}
+
 
 class PageSection(Entity):
     def __init__(self, *,
@@ -83,18 +123,11 @@ class PageSection(Entity):
         else:
             self.created_by = None
         
-    def __str__(self):
-        group = {
-            'A'  : 'HeadList',
-            'B'  : 'Group B List',
-            'C'  : 'Group C List',
-            'D'  : 'Group D List',
-            'NP' : 'Group NP List'
-        }
+    def __str__(self):        
         notebook_value = self.notebook.name if isinstance(self.notebook, Notebook) else ''
-        return (f'{group.get(self.group.value)} Page {self.page_number} of {self.created_at} with '
+        return (f'{GROUP_LABEL.get(self.group.value)} Page {self.page_number} of {self.created_at} with '
                 f'distillation date of {self.distillation_at} from the {notebook_value} notebook') if self.group != Group.NEW_PAGE \
-                else f'{group.get(self.group.value)} of {self.created_at} will be able to composite a new HeadList.'
+                else f'{GROUP_LABEL.get(self.group.value)} of {self.created_at} will be able to composite a new HeadList.'
         
     def __repr__(self):
         created_by_id = None
@@ -116,31 +149,12 @@ class PageSection(Entity):
     
     def get_distillation_event(self):
         if self.distillated:
-            color = {'A'  : '#9B9B9B',
-                     'B'  : '#9B9B9B',
-                     'H'  : '#9B9B9B',
-                     'C'  : '#9B9B9B',
-                     'D'  : '#9B9B9B',
-                     'NP' : '#9B9B9B'}
+            color = DIST_GROUP_COLOR
         else:
-            color = {'A'  : '#FF0000',
-                     'B'  : '#00A81D',
-                     'C'  : '#002BFF',
-                     'D'  : '#B300B7',
-                     'NP' : '#000000'}
-        sequence = {'A'  : '1st headlist',
-                    'B'  : '2nd distillation',
-                    'C'  : '3rd distillation',
-                    'D'  : '4th distillation',
-                    'NP' : '🔁 repet headlist'}
-        after_sequence = {'B'  : ' of A',
-                          'C'  : ' of B',
-                          'D'  : ' of C',
-                          'NP' : ' of D'}
-        
+            color = GROUP_COLOR
         return {
-            "title"      : (f"{self.group.value}{self.page_number} ({sequence.get(self.group.value, 'Indef')}"
-                            f"{after_sequence.get(self.group.value, '')})") \
+            "title"      : (f"{self.group.value}{self.page_number} ({SEQUENCE_GROUP.get(self.group.value, 'Indef')}"
+                            f"{AFTER_SEQUENCE_GROUP.get(self.group.value, '')})") \
                                 if (self.created_at != self.distillation_at) else f"🗣️ Add HeadList",
             "color"      : color.get(self.group.value, color['NP']) if self.created_at \
                             else '#DCDCDC',
@@ -153,22 +167,19 @@ class PageSection(Entity):
         created_by = None
         if self.created_by is not None:
             created_by = self.created_by.page_number
-        return {    
-            'id'                   : [self.id for _ in range(len(self.sentencelabels))],
-            'page_number'          : [self.page_number for _ in range(len(self.sentencelabels))],
-            'group'                : [self.group.value for _ in range(len(self.sentencelabels))],
-            'created_at'           : [self.created_at for _ in range(len(self.sentencelabels))],
-            'updated_at'           : [self.updated_at for _ in range(len(self.sentencelabels))],
-            'created_by_id'        : [created_by for _ in range(len(self.sentencelabels))],
-            'distillation_at'      : [self.distillation_at for _ in range(len(self.sentencelabels))],
-            'distillation_actual'  : [self._distillation_actual for _ in range(len(self.sentencelabels))],
-            'distillated'          : [self._distillated for _ in range(len(self.sentencelabels))],
-            'notebook_id'          : [self.notebook.id for _ in range(len(self.sentencelabels))],
-            'notebook_name'        : [self.notebook.name for _ in range(len(self.sentencelabels))],
-            'sentencelabel_id'          : [v.id for v in self.sentencelabels],
-            # 'translated_sentence' : [v.sentencetranslation for v in self.sentencelabels],
-            # 'memorized'            : [v.memorialized for v in self.sentencelabels],
-        }
+        return [{    
+            'id'                   : self.id,
+            'page'          : self.page_number,
+            'group'                : self.group.value,
+            'created_at'           : self.created_at,
+            'updated_at'           : self.updated_at,
+            'created_by_id'        : created_by,
+            'distillation_at'      : self.distillation_at,
+            'distillation_actual'  : self._distillation_actual,
+            'distillated'          : self._distillated,
+            'notebook_id'          : self.notebook.id,
+            'notebook_name'        : self.notebook.name,
+        }]
     
     def to_dict(self):
         created_by = None

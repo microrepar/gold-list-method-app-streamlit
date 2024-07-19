@@ -40,55 +40,71 @@ st.session_state['username'] = st.session_state['username']
 if st.session_state.username:
     # ---- SIDEBAR ----
     authenticator.logout(f"Logout | {st.session_state.username}", "sidebar")
+    
+    controller = Controller()
 
-
+    
+    def get_pagesection_by_notebook(notebook: Notebook):
+        request = {
+            'resource': '/pagesection/find_by_field_clean',
+            'pagesection_notebook': notebook.to_dict_with_prefix(),
+        }
+        resp = controller(request=request)
+        messages = resp['messages']
+        entities = resp['entities']
+        if 'error' in messages:
+            for msg in messages['error']:
+                placehold_container_msg.error(msg, icon='🚨')
+        if 'info' in messages:
+            placehold_container_msg.info('\n  - '.join(messages['info']), icon='⚠️')
+        if 'warning' in messages:
+            placehold_container_msg.warning('\n  - '.join(messages['warning']), icon='ℹ️')
+        if 'success' in messages:
+            placehold_container_msg.success('\n  - '.join(messages['success']), icon='✅')
+        return entities
 
     
     #############################################################
-    controller = Controller()
+    # REQUEST USER FIND  BY FIELD
+    #############################################################
     request = {
-        'resource': '/user/find_by_field',
-        'user_username': st.session_state.username
+        'resource': '/notebook',
     }
     resp = controller(request=request)
     messages = resp['messages']
     entities = resp['entities']
-
+    notebook_list = entities
+    # RESPONSE MESSAGES##########################################        
     if 'error' in messages:
         for msg in messages['error']:
             placehold_container_msg.error(msg, icon='🚨')
-        user_id = None
-    else:
-        user_id = entities[-1].id
-
     if 'info' in messages:
         placehold_container_msg.info('\n  - '.join(messages['info']), icon='⚠️')
     if 'warning' in messages:
         placehold_container_msg.warning('\n  - '.join(messages['warning']), icon='ℹ️')
     if 'success' in messages:
         placehold_container_msg.success('\n  - '.join(messages['success']), icon='✅')
-
-    request = {
-        'resource': '/notebook/find_by_field',
-        'notebook_user': {'user_id_': user_id}
-    }
-    resp = controller(request=request)
-    notebooks_list = resp.get('entities')
-    messages = resp.get('messages')
+    #############################################################
     #############################################################
 
     if 'flag_alter_calendar' not in st.session_state:
         st.session_state.flag_alter_calendar = True
+    
+    if 'flag_events' not in st.session_state:
+        st.session_state.flag_events = True
+    
+    if 'events' not in st.session_state:
+        st.session_state.events = []
+   
 
     def on_change_notebook():
         st.session_state.flag_alter_calendar = not st.session_state.flag_alter_calendar
+        st.session_state.flag_events = True
 
-
-    notebook_dict = {n.name: n for n in notebooks_list}
-
-    if len(notebooks_list) > 0:
+    notebook_dict = {n.name: n for n in notebook_list}
+    if len(notebook_list) > 0:
         selected_notebook = st.sidebar.selectbox('**NOTEBOOK:**', 
-                                                [n.name for n in notebooks_list],
+                                                [n.name for n in notebook_list],
                                                 on_change=on_change_notebook,
                                                 key='select_notebook')
 
@@ -97,14 +113,10 @@ if st.session_state.username:
         st.subheader(f'{notebook.name.upper()} NOTEBOOK')
 
         col_group_1, col_group_2, col_group_3, col_group_4 = st.sidebar.columns(4)
-        st.sidebar.markdown("[Add New Headlist](Add%20HeadList)")
-        st.sidebar.markdown("[Distillation](Distillation)")
 
-        st.sidebar.divider()
-
-        mode = 'daygrid'
-
-        events = [ps.get_distillation_event() for ps in notebook.pagesection_list]
+        # st.sidebar.markdown("[Add New Headlist](Add%20HeadList)")
+        # st.sidebar.markdown("[Distillation](Distillation)")
+        # st.sidebar.divider()
         calendar_resources = [
             {"id": "a", "building": "Building A", "title": "Group A"},
             {"id": "b", "building": "Building A", "title": "Group B"},
@@ -128,17 +140,22 @@ if st.session_state.username:
             "initialDate": f"{datetime.datetime.now().date()}",
             "initialView": "dayGridMonth",
         }
-
             
+        mode = 'daygrid'
+
+        if st.session_state.flag_events:
+            st.session_state.events = [ps.get_distillation_event() for ps in get_pagesection_by_notebook(notebook)]
+            st.session_state.flag_events = False
+
         if st.session_state.flag_alter_calendar:
             state = calendar(
-                events=events,
+                events=st.session_state.events,
                 options=calendar_options,
                 key=mode+'1',
             )
         else:     
             state = calendar(
-                events=events,
+                events=st.session_state.events,
                 options=calendar_options,
                 key=mode+'2',
             )
@@ -148,7 +165,7 @@ if st.session_state.username:
                 use_container_width=True,
                 on_click=on_change_notebook, 
                 type='primary')
-
+        
     else:
         st.warning('⚠️Attention! There are no notebooks registred!')
         st.markdown('[Create a Notebook](Add%20Notebook)')
