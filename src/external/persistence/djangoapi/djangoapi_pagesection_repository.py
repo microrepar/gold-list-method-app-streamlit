@@ -69,6 +69,9 @@ class ApiPageSectionRepository(PageSectionRepository):
                     # value = pd.to_datetime(value).strftime("%Y-%m-%d")
                 elif "#" in value:
                     value = None
+            elif attr in 'distillation_at':
+                if value:
+                    value = date_to_string(value)
             elif attr in "section_number distillated distillation_at":
                 ...
             else:

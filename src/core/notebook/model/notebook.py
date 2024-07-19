@@ -118,7 +118,7 @@ class Notebook(Entity):
                 ')'
         )
     
-    def get_pagesection(self, *, distillation_at, group) -> 'PageSection':
+    def get_pagesection(self, *, distillation_at, group) -> 'PageSection': # type: ignore
         for pagesection in self.pagesection_list:
             if distillation_at == pagesection.distillation_at \
                     and group == pagesection.group \

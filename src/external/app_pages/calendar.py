@@ -65,7 +65,7 @@ if st.session_state.username:
 
     
     #############################################################
-    # REQUEST USER FIND  BY FIELD
+    # REQUEST NOTEBOOK GET ALL
     #############################################################
     request = {
         'resource': '/notebook',
