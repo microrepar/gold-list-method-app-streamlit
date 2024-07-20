@@ -162,23 +162,38 @@ class PageSection(Entity):
             "end"        : f"{self.distillation_at}",
             "resourceId" : f"{self.group.value.lower()}",
         }
+    
+    def get_columns_from_dataframe(self):
+        return [
+            # 'id',
+            # 'notebook_id',
+            # 'updated_at',
+            'notebook_name',
+            'page',
+            'group',
+            'created_at',
+            'distillation_at',
+            'distillated',
+            'distillation_actual',
+            'created_by_id',
+        ]
 
     def data_to_dataframe(self):
         created_by = None
         if self.created_by is not None:
             created_by = self.created_by.page_number
         return [{    
-            'id'                   : self.id,
-            'page'          : self.page_number,
-            'group'                : self.group.value,
-            'created_at'           : self.created_at,
-            'updated_at'           : self.updated_at,
-            'created_by_id'        : created_by,
-            'distillation_at'      : self.distillation_at,
-            'distillation_actual'  : self._distillation_actual,
-            'distillated'          : self._distillated,
-            'notebook_id'          : self.notebook.id,
-            'notebook_name'        : self.notebook.name,
+            'id'                  : self.id,
+            'page'                : self.page_number,
+            'group'               : self.group.value,
+            'created_at'          : self.created_at,
+            'updated_at'          : self.updated_at,
+            'created_by_id'       : created_by,
+            'distillation_at'     : self.distillation_at,
+            'distillation_actual' : self._distillation_actual,
+            'distillated'         : self._distillated,
+            'notebook_id'         : self.notebook.id,
+            'notebook_name'       : self.notebook.name,
         }]
     
     def to_dict(self):
@@ -196,6 +211,19 @@ class PageSection(Entity):
             'distillation_at'     : date_to_string(self.distillation_at),
             'distillation_actual' : date_to_string(self._distillation_actual),
             'created_by_id'       : created_by,
+        }
+    
+    def to_dict_with_prefix(self):
+        created_by = None
+        return {    
+            'id'                  : self.id,
+            'created_at'          : self.created_at,
+            'updated_at'          : self.updated_at,
+            'page_number'         : self.page_number,
+            'group'               : self.group.value,
+            'distillated'         : self._distillated,
+            'distillation_at'     : self.distillation_at,
+            'distillation_actual' : self._distillation_actual,
         }
 
     def validate(self):

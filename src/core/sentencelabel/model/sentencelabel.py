@@ -45,18 +45,33 @@ class SentenceLabel(Entity):
             }
         ]
     
+    def to_dict_with_prefix(self):
+        return {
+            'sentencelabel_id_'                 : self.id,
+            'sentencelabel_created_at'          : self.created_at,
+            'sentencelabel_updated_at'          : self.updated_at,
+            'sentencelabel_translation'         : self.translation,
+            'sentencelabel_memorialized'        : self.memorialized,
+        }
+
     def to_dict(self):
+        sentencetranslation_id = None
+        pagesection_id = None
+        if self.sentencetranslation:
+            sentencetranslation_id = self.sentencetranslation.id
+        if self.pagesection:
+            pagesection_id = self.pagesection.id
         return {
             'id'                     : self.id,
-            'created_at'             : self.created_at,
-            'updated_at'             : self.updated_at,
-            'sentencetranslation_id' : self.sentencetranslation.id,
-            'pagesection_id'         : self.pagesection.id,
+            'created_at'             : date_to_string(self.created_at),
+            'updated_at'             : date_to_string(self.updated_at),
+            'sentencetranslation_id' : sentencetranslation_id,
+            'pagesection_id'         : pagesection_id,
             'translation'            : self.translation,
             'memorialized'           : self.memorialized,
         }
     
-    def __str__(self):
+    def __repr__(self):
         return (
             f'SentenceLabel('
                 f'id_={self.id}, '

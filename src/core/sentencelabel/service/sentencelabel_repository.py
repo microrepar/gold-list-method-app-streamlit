@@ -34,3 +34,8 @@ class SentenceLabelRepository(Repository, Protocol):
         """Remove by id a SentenceLabel in the database
         """
     
+    @abstractmethod
+    def update(self, entity: SentenceLabel) -> SentenceLabel:
+        """Update by id a SentenceLabel in the database
+        """
+    

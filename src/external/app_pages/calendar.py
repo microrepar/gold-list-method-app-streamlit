@@ -110,7 +110,7 @@ if st.session_state.username:
 
         notebook: Notebook = notebook_dict.get(selected_notebook)
 
-        st.subheader(f'{notebook.name.upper()} NOTEBOOK')
+        st.subheader(f'{notebook.name.upper()} CALENDAR')
 
         col_group_1, col_group_2, col_group_3, col_group_4 = st.sidebar.columns(4)
 

@@ -36,12 +36,14 @@ class ApiSentenceLabelRepository(SentenceLabelRepository):
         response.raise_for_status()
         response_json = response.json()
 
-        entity.id = response_json.get('id')
-        entity.updated_at = string_to_date(response_json.get('updated_at'))
-        entity.created_at = string_to_date(response_json.get('created_at'))
-        entity.memorialized = response_json.get('memorialized')
-        entity.translation = response_json.get('translation')
-        return entity
+        sentencelabel = SentenceLabel(
+            id_ = response_json.get('id'),
+            updated_at = string_to_date(response_json.get('updated_at')),
+            created_at = string_to_date(response_json.get('created_at')),
+            memorialized = response_json.get('memorialized'),
+            translation = response_json.get('translation')
+        )
+        return sentencelabel
 
     def get_all(self) -> List[SentenceLabel]:
         return []
@@ -87,7 +89,29 @@ class ApiSentenceLabelRepository(SentenceLabelRepository):
         return sentencelabel_list
 
     def update(self, entity: SentenceLabel) -> SentenceLabel:
-        pass
+        url = self.url + 'update/'
+        sentencelabel_dict = entity.to_dict()
+        sentencelabel_dict.pop('updated_at')
+        sentencelabel_dict.pop('created_at')
+        sentencelabel_dict.pop('sentencetranslation_id')
+        sentencelabel_dict.pop('pagesection_id')
+        sentencelabel_dict = {k: v for k, v in sentencelabel_dict.items() if v is not None}
+
+        self.querystring.update(sentencelabel_dict)
+        response = requests.put(url, headers=self.headers, json=self.querystring)
+        response.raise_for_status()
+        response_json = response.json()
+
+        sentencelabel = SentenceLabel(
+            id_ = response_json.get('id'),
+            updated_at = string_to_date(response_json.get('updated_at')),
+            created_at = string_to_date(response_json.get('created_at')),
+            memorialized = response_json.get('memorialized'),
+            translation = response_json.get('translation'),
+            sentencetranslation=entity.sentencetranslation,
+            pagesection=entity.pagesection
+        )
+        return sentencelabel
 
     def remove(self, entity: SentenceLabel) -> bool:
         pass

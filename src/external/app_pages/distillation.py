@@ -24,6 +24,7 @@ def get_group_dataframe(pagesection):
     sentencelabels  = None if pagesection is None else pagesection.sentencelabels
     
     columns = [
+        'sentencelabel_id'
         "foreign_language",
         "translated_sentences",
         "remembered",
@@ -38,7 +39,9 @@ def get_group_dataframe(pagesection):
         df['remembered'] = [sl.memorialized for sl in pagesection.sentencelabels]
     else:
         df['translated_sentences'] = ''
-        df['remembered'] = False        
+        df['remembered'] = False
+    # df.index = [sl.id for sl in pagesection.sentencelabels]
+        
     return df, pagesection
 
 
@@ -90,7 +93,6 @@ if st.session_state.username:
         selected_notebook = st.sidebar.selectbox('**SELECT NOTEBOOK:**', 
                                                 [n.name for n in notebook_list],
                                                 key='select_notebook')
-        
 
         notebook: Notebook = notebook_dict.get(selected_notebook)
         #############################################################
@@ -188,8 +190,6 @@ if st.session_state.username:
 
         placeholder_subtitle.subheader(f'{notebook.name.upper()} NOTEBOOK - {choiced_group}')
 
-        st.sidebar.markdown("[Show Calendar](Calendar)")
-
         column_configuration = {
             "foreign_language": st.column_config.TextColumn(
                 "Foreign Language", 
@@ -202,7 +202,7 @@ if st.session_state.username:
                 width="large"
             ),
             "remembered": st.column_config.CheckboxColumn(
-                "You remember?", 
+                "Remembered?", 
                 help="Check the checkbox if you remembered this sentence?",
                 width='small'
             ),
@@ -216,9 +216,9 @@ if st.session_state.username:
         }
 
         
-    ##########################Group Section####################################
-
-        distilled_columns = ['remembered', 'foreign_language', 'mother_tongue', 'translated_sentences', ]
+        ##########################Group Section####################################
+        distilled_columns = ['remembered', 'foreign_language', 
+                             'mother_tongue', 'translated_sentences',]
         
         btn_update = False
         
@@ -241,8 +241,6 @@ if st.session_state.username:
                 )
         
         col4.markdown(f'Date: {selected_day}')
-
-
         
         if not dataframe.empty:
         
@@ -296,11 +294,8 @@ if st.session_state.username:
                 df_update['remembered'] = False
                 df_update['foreign_idiom'] = notebook.foreign_idiom
                 df_update['mother_idiom'] = notebook.mother_idiom
-                df_update['created_at'] = selected_day
+                df_update['updated_at'] = selected_day
 
-                ###############################################################
-                # UPDATE PAGESECTION - BODY REQUEST
-                ###############################################################
                 cols_to_rename = {
                     "foreign_language":"sentence_foreign_language",
                     "mother_tongue":"sentence_mother_tongue",
@@ -310,19 +305,19 @@ if st.session_state.username:
                 }
                 df_update.rename(columns=cols_to_rename, inplace=True)
 
+                sentencelabel_updated_list = []
+                for sl, dist_update_dict in zip(pagesection_group.sentencelabels, list(df_update.T.to_dict().values())):
+                    sl.translation = dist_update_dict['translated_sentences']
+                    sl.memorialized = dist_update_dict['remembered']
+                    sentencelabel_updated_list.append(sl)
 
+                ###############################################################
+                # UPDATE PAGESECTION - BODY REQUEST
+                ###############################################################
                 request = {
                     'resource': '/pagesection/update',
-                    'pagesection_notebook': {'notebook_id_': notebook.id,
-                                            'notebook_days_period': notebook.days_period},
                     'pagesection_id_': pagesection_group.id,
-                    'pagesection_page_number': pagesection_group.page_number,
-                    'pagesection_group': pagesection_group.group,
-                    'pagesection_created_at': pagesection_group.created_at,
-                    'pagesection_distillation_at': pagesection_group.distillation_at,
-                    'pagesection_translated_sentences': df_update['translated_sentences'].to_list(),
-                    'pagesection_memorializeds': df_update['remembered'].to_list(),
-                    'pagesection_sentences': list(df_update.T.to_dict().values()),            
+                    'pagesection_sentencelabels': [sl.to_dict_with_prefix() for sl in sentencelabel_updated_list],            
                 }
                 ####################
                 # FrontController
@@ -330,7 +325,6 @@ if st.session_state.username:
                 resp = controller(request=request)
                 messages = resp.get('messages')
                 entities = resp.get('entities')
-
                 ####################
                 # Feadback
                 ####################

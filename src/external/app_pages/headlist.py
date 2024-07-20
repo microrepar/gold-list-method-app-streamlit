@@ -305,15 +305,7 @@ if st.session_state.username:
             df = df.groupby("created_at").first().reset_index()
             df_result = df.sort_values("created_at", ascending=False).head(5)
 
-            columns = [
-                "created_at",
-                "id",
-                "page",
-                "group",
-                "distillation_at",
-                "distillation_actual",
-                "notebook_name",
-            ]
+            columns = notebook.pagesection_list[-1].get_columns_from_dataframe()
 
             st.markdown("#### Last 5 Registred HeadLists:")
             st.dataframe(df_result[columns], hide_index=True, use_container_width=True)

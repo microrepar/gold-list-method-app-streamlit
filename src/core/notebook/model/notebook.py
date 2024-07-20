@@ -8,8 +8,8 @@ from src.core.user import User
 
 class Notebook(Entity):
     def __init__(self, *,
-                 name               : str = None,
                  id_                : str = None,
+                 name               : str = None,
                  created_at         : datetime.date = None,
                  updated_at         : datetime.date = None,
                  sentence_list_size : int = None,
@@ -19,8 +19,8 @@ class Notebook(Entity):
                  mother_idiom       : str = None,
                  user               : User = None):
         
-        self.name              = name
         self.id                = id_
+        self.name              = name
         self.created_at        = created_at
         self.updated_at        = updated_at
         self.sentence_list_size= sentence_list_size
@@ -46,12 +46,15 @@ class Notebook(Entity):
                 'Field "mother idiom" cannot empty or filled with white spaces.'
             )
         return msg
+    
+    def get_columns_from_dataframe(self):
+        return ['id', 'name', 'created_at', 'updated_at', 'sentence_list_size', 
+                'days_period', 'foreign_idiom', 'mother_idiom', 'user_id',]
 
     def data_to_dataframe(self):
         user_id = None
         if self.user is not None:
             user_id = self.user.id
-
         return [
             {
                 'id'                 : self.id,
@@ -61,7 +64,6 @@ class Notebook(Entity):
                 'sentence_list_size' : self.sentence_list_size,
                 'days_period'        : self.days_period,
                 'foreign_idiom'      : self.foreign_idiom,
-                'mother_idiom'       : self.mother_idiom,
                 'mother_idiom'       : self.mother_idiom,
                 'user_id'            : user_id
             }
@@ -90,7 +92,6 @@ class Notebook(Entity):
                 'notebook_days_period'        : self.days_period,
                 'notebook_foreign_idiom'      : self.foreign_idiom,
                 'notebook_mother_idiom'       : self.mother_idiom,
-                'notebook_user'               : self.user.to_dict_with_prefix(),
             }
     
     def __str__(self) -> str:
