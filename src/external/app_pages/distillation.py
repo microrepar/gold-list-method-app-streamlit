@@ -283,9 +283,8 @@ if st.session_state.username:
                     key='distill_data')
 
             elif pagesection_group.distillated:
-                st.dataframe(
-                    dataframe[distilled_columns].rename(columns=rename_columns),
-                    use_container_width=True, hide_index=True)
+                df_distilled = st.dataframe(dataframe[distilled_columns].rename(columns=rename_columns),
+                                            use_container_width=True, hide_index=True)
             
             
             if btn_update:
@@ -295,15 +294,6 @@ if st.session_state.username:
                 df_update['foreign_idiom'] = notebook.foreign_idiom
                 df_update['mother_idiom'] = notebook.mother_idiom
                 df_update['updated_at'] = selected_day
-
-                cols_to_rename = {
-                    "foreign_language":"sentence_foreign_language",
-                    "mother_tongue":"sentence_mother_tongue",
-                    "foreign_idiom":"sentence_foreign_idiom",
-                    "mother_idiom":"sentence_mother_idiom",
-                    "created_at":"sentence_created_at",
-                }
-                df_update.rename(columns=cols_to_rename, inplace=True)
 
                 sentencelabel_updated_list = []
                 for sl, dist_update_dict in zip(pagesection_group.sentencelabels, list(df_update.T.to_dict().values())):
@@ -350,39 +340,36 @@ if st.session_state.username:
                 placeholder_distill_button = st.empty()
 
                 if placeholder_distill_button.button('HEADLIST DISTILLATION FINISH',
-                                                    use_container_width=True, 
-                                                    type='primary', 
-                                                    key='btn_distill',
-                                                    disabled=True if pagesection_group.distillated \
+                                                     use_container_width=True, 
+                                                     type='primary', 
+                                                     key='btn_distill',
+                                                     disabled=True if pagesection_group.distillated \
                                                         else False):
                     
                     df_distilled = df_distilled.reset_index(drop=True)
                     df_distilled['foreign_idiom'] = notebook.foreign_idiom
                     df_distilled['mother_idiom'] = notebook.mother_idiom
+                    
+                    sentencelabel_distilled_list = []
+                    for sl, dist_update_dict in zip(pagesection_group.sentencelabels, 
+                                                    list(df_distilled.T.to_dict().values())):
+                        sl.translation = dist_update_dict['translated_sentences']
+                        sl.memorialized = dist_update_dict['remembered']
+                        sentencelabel_distilled_list.append(sl)
 
                     ###############################################################
                     # DISTILLATION PAGESECTION - BODY REQUEST
                     ###############################################################
-                    cols_to_rename = {
-                        "foreign_language":"sentence_foreign_language",
-                        "mother_tongue":"sentence_mother_tongue",
-                        "foreign_idiom":"sentence_foreign_idiom",
-                        "mother_idiom":"sentence_mother_idiom",
-                    }
-                    df_distilled.rename(columns=cols_to_rename, inplace=True)
-
                     request = {
                         'resource': '/pagesection/distillation',
-                        'pagesection_notebook': {'notebook_id_': notebook.id,
-                                                'notebook_days_period': notebook.days_period},
+                        'pagesection_notebook': notebook.to_dict_with_prefix(),
                         'pagesection_id_': pagesection_group.id,
                         'pagesection_page_number': pagesection_group.page_number,
                         'pagesection_group': pagesection_group.group,
                         'pagesection_created_at': selected_day,
                         'pagesection_distillation_at': pagesection_group.distillation_at,
-                        'pagesection_translated_sentences': df_distilled['translated_sentences'].to_list(),
-                        'pagesection_memorializeds': df_distilled['remembered'].to_list(),
-                        'pagesection_sentences': list(df_distilled.T.to_dict().values()),            
+                        'pagesection_distillation_actual': selected_day,
+                        'pagesection_sentencelabels':[sl.to_dict_with_prefix() for sl in sentencelabel_distilled_list],            
                     }
                     ####################
                     # FrontController

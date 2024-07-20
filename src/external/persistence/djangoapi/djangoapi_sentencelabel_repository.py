@@ -41,7 +41,34 @@ class ApiSentenceLabelRepository(SentenceLabelRepository):
             updated_at = string_to_date(response_json.get('updated_at')),
             created_at = string_to_date(response_json.get('created_at')),
             memorialized = response_json.get('memorialized'),
-            translation = response_json.get('translation')
+            translation = response_json.get('translation'),
+            sentencetranslation=entity.sentencetranslation
+        )
+        return sentencelabel
+    
+    def update(self, entity: SentenceLabel) -> SentenceLabel:
+        url = self.url + f'{entity.id}'
+        sentencelabel_dict = entity.to_dict()
+        sentencelabel_dict.pop('id')
+        sentencelabel_dict.pop('updated_at')
+        sentencelabel_dict.pop('created_at')
+        sentencelabel_dict.pop('sentencetranslation_id')
+        sentencelabel_dict.pop('pagesection_id')
+        sentencelabel_dict = {k: v for k, v in sentencelabel_dict.items() if v is not None}
+
+        self.querystring.update(sentencelabel_dict)
+        response = requests.put(url, headers=self.headers, json=self.querystring)
+        response.raise_for_status()
+        response_json = response.json()
+
+        sentencelabel = SentenceLabel(
+            id_ = response_json.get('id'),
+            updated_at = string_to_date(response_json.get('updated_at')),
+            created_at = string_to_date(response_json.get('created_at')),
+            memorialized = response_json.get('memorialized'),
+            translation = response_json.get('translation'),
+            sentencetranslation=entity.sentencetranslation,
+            pagesection=entity.pagesection
         )
         return sentencelabel
 
@@ -87,31 +114,6 @@ class ApiSentenceLabelRepository(SentenceLabelRepository):
             )
             sentencelabel_list.append(sentencelabel)
         return sentencelabel_list
-
-    def update(self, entity: SentenceLabel) -> SentenceLabel:
-        url = self.url + 'update/'
-        sentencelabel_dict = entity.to_dict()
-        sentencelabel_dict.pop('updated_at')
-        sentencelabel_dict.pop('created_at')
-        sentencelabel_dict.pop('sentencetranslation_id')
-        sentencelabel_dict.pop('pagesection_id')
-        sentencelabel_dict = {k: v for k, v in sentencelabel_dict.items() if v is not None}
-
-        self.querystring.update(sentencelabel_dict)
-        response = requests.put(url, headers=self.headers, json=self.querystring)
-        response.raise_for_status()
-        response_json = response.json()
-
-        sentencelabel = SentenceLabel(
-            id_ = response_json.get('id'),
-            updated_at = string_to_date(response_json.get('updated_at')),
-            created_at = string_to_date(response_json.get('created_at')),
-            memorialized = response_json.get('memorialized'),
-            translation = response_json.get('translation'),
-            sentencetranslation=entity.sentencetranslation,
-            pagesection=entity.pagesection
-        )
-        return sentencelabel
 
     def remove(self, entity: SentenceLabel) -> bool:
         pass

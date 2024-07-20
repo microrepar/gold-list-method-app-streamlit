@@ -22,14 +22,11 @@ class SentenceLabel(Entity):
         self.translation          = translation
         self.memorialized         = memorialized
 
-    def clone(self, pagesection: 'PageSection'): # type: ignore
+    def clone(self): # type: ignore
         return SentenceLabel(
-            created_at=self.created_at,
-            updated_at=self.updated_at,
-            sentencetranslation=self.sentencetranslation,
-            pagesection=pagesection,
             translation=self.translation,
-            memorialized=self.memorialized
+            memorialized=self.memorialized,
+            sentencetranslation=self.sentencetranslation.clone()
         )
         
     def data_to_dataframe(self):
@@ -46,12 +43,16 @@ class SentenceLabel(Entity):
         ]
     
     def to_dict_with_prefix(self):
+        st_to_dict_with_prefix = self.sentencetranslation
+        if self.sentencetranslation:
+            st_to_dict_with_prefix = self.sentencetranslation.to_dict_with_prefix()
         return {
             'sentencelabel_id_'                 : self.id,
             'sentencelabel_created_at'          : self.created_at,
             'sentencelabel_updated_at'          : self.updated_at,
             'sentencelabel_translation'         : self.translation,
             'sentencelabel_memorialized'        : self.memorialized,
+            'sentencelabel_sentencetranslation' : st_to_dict_with_prefix
         }
 
     def to_dict(self):

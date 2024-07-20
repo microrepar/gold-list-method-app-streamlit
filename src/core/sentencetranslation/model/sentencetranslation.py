@@ -61,9 +61,6 @@ class SentenceTranslation(Entity):
     
     def clone(self):
         return SentenceTranslation(
-            id_=self.id,
-            created_at=self.created_at,
-            updated_at=self.updated_at,
             foreign_language=self.foreign_language,
             mother_tongue=self.mother_tongue,
             foreign_idiom=self.foreign_idiom,
@@ -86,10 +83,10 @@ class SentenceTranslation(Entity):
             'sentencetranslation_id_'                        : self.id,
             'sentencetranslation_created_at'                : self.created_at,
             'sentencetranslation_updated_at'                : self.updated_at,
-            'sentencetranslation_foreign_language_sentence' : self.foreign_language,
-            'sentencetranslation_mother_language_sentence'  : self.mother_tongue,
-            'sentencetranslation_foreign_language_idiom'    : self.foreign_idiom,
-            'sentencetranslation_mother_language_idiom'     : self.mother_idiom,
+            'sentencetranslation_foreign_language' : self.foreign_language,
+            'sentencetranslation_mother_tongue'  : self.mother_tongue,
+            'sentencetranslation_foreign_idiom'    : self.foreign_idiom,
+            'sentencetranslation_mother_idiom'     : self.mother_idiom,
         }
     
     def __str__(self):

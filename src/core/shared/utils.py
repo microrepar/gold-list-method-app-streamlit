@@ -12,14 +12,14 @@ def datetime_to_string(datetime_obj: datetime.datetime, format='%d/%m/%Y %H:%M:%
         return datetime_obj.strftime(format)
     
 
-def string_to_date(string: str) -> datetime.date:
+def string_to_date(string: str) -> datetime.date:    
     formats = ['%Y-%m-%dT%H:%M:%S.%fZ', '%d/%m/%Y', '%Y-%m-%d']
     for format in formats:
         try:
             datetime_obj = datetime.datetime.strptime(string, format)
             return datetime_obj.date()
-        except ValueError: ...
-            
+        except Exception: ...
+
     
 
 def string_to_datetime(string: str) -> datetime.date:
@@ -28,5 +28,4 @@ def string_to_datetime(string: str) -> datetime.date:
         try:
             datetime_obj = datetime.datetime.strptime(string, format)
             return datetime_obj
-        except ValueError:
-            return None
+        except Exception: ...

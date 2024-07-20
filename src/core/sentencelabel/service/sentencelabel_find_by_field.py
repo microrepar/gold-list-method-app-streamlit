@@ -22,10 +22,6 @@ class SentenceLabelFindByField(UseCase):
         try:
             sentencelabel_list: List[SentenceLabel] = self.repository.find_by_field(entity)
 
-            if not sentencelabel_list:
-                result.error_msg = f'SentenceLabelFindByField service error:  No sentence labels found to {entity}'
-                return result
-            
             from src.core.sentencetranslation import SentenceTranslationFindByField, SentenceTranslation
             from src.external.persistence.djangoapi import ApiSentenceTranslationRepository
             st_find_by_field = SentenceTranslationFindByField(repository=ApiSentenceTranslationRepository())
