@@ -48,47 +48,26 @@ class PageSectionRegistry(UseCase):
             if entity.group == Group.A:
                 clone_entity = entity.clone()
                 clone_entity.notebook = entity.notebook
-                clone_entity.sentencelabels = [sl.clone() for sl in entity.sentencelabels]
                 clone_entity.distillation_at = clone_entity.created_at
                 clone_entity.distillation_actual = clone_entity.created_at
-
                 clone_entity.distillated = True
                 
                 clone_entity = self.repository.registry(entity=clone_entity)
                 
-                sentencelabel_list = []
-                for sl in clone_entity.sentencelabels:
-                    sl.pagesection = clone_entity
-                    sl.memorialized = False
-                    sl.translation = ''
-
-                    resp = sl_registry_service.execute(sl).to_dict()
-
-                    entities = resp.get('entities')
-                    sentencelabel_list += entities
-                    
-                    messages = resp.get('messages')
-                    result.update_messages(messages)
-
-                    if 'error' in messages:
-                        self.repository.remove(clone_entity)
-                        return result
-                clone_entity.sentencelabels = sentencelabel_list
             
             new_entity = self.repository.registry(entity=entity)
             
             sentencelabel_list = []
-            for sl in clone_entity.sentencelabels:
+            for sl in entity.sentencelabels:
+                # adds the new pagesection for each sentencelabel
                 sl.pagesection = new_entity
 
                 resp = sl_registry_service.execute(sl).to_dict()
 
                 entities = resp.get('entities')
-                sentencelabel_list += entities
-                
+                sentencelabel_list += entities                
                 messages = resp.get('messages')
                 result.update_messages(messages)
-
                 if 'error' in messages:
                     self.repository.remove(clone_entity)
                     self.repository.remove(new_entity)
