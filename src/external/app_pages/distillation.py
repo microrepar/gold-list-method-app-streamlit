@@ -72,32 +72,6 @@ if st.session_state.get('username'):
                                                 [n.name for n in notebook_list],
                                                 key='select_notebook')
 
-        notebook: Notebook = notebook_dict.get(selected_notebook)
-        #############################################################
-        # REQUEST PAGESECTION FIND BY FIELD CLEAN
-        #############################################################
-        request = {
-            'resource': '/pagesection/find_by_field_clean',
-            'pagesection_notebook': notebook.to_dict_with_prefix(),
-        }
-        resp = controller(request=request)
-        messages = resp['messages']
-        entities = resp['entities']
-        notebook.pagesection_list = entities
-        # RESPONSE MESSAGES##########################################        
-        if 'error' in messages:
-            for msg in messages['error']:
-                placeholder_container_msg.error(msg, icon='🚨')
-        if 'info' in messages:
-            placeholder_container_msg.info('\n  - '.join(messages['info']), icon='⚠️')
-        if 'warning' in messages:
-            placeholder_container_msg.warning('\n  - '.join(messages['warning']), icon='ℹ️')
-        if 'success' in messages:
-            placeholder_container_msg.success('\n  - '.join(messages['success']), icon='✅')
-        #############################################################
-        #############################################################
-
-
         placeholder_subtitle = st.empty()
 
         col_group_1, col_group_2, col_group_3, col_group_4 = st.sidebar.columns(4)
@@ -106,6 +80,7 @@ if st.session_state.get('username'):
                                             datetime.datetime.now().date(), 
                                             format='DD/MM/YYYY')
         
+        notebook: Notebook = notebook_dict.get(selected_notebook)
         #############################################################
         # REQUEST PAGESECTION FIND BY FIELD - NOTEBOOK AND DISTILLATION_AT
         #############################################################
