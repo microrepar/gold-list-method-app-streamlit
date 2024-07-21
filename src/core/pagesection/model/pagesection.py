@@ -145,7 +145,7 @@ class PageSection(Entity):
         return {
             "title"      : (f"{self.group.value}{self.page_number} ({SEQUENCE_GROUP.get(self.group.value, 'Indef')}"
                             f"{AFTER_SEQUENCE_GROUP.get(self.group.value, '')})") \
-                                if (self.created_at != self.distillation_at) else f"🗣️ Add HeadList",
+                                if (self.created_at != self.distillation_at) else f"🗣️ {self.group.value}{self.page_number} Add HeadList",
             "color"      : color.get(self.group.value, color['NP']) if self.created_at \
                             else '#DCDCDC',
             "start"      : f"{self.distillation_at}",

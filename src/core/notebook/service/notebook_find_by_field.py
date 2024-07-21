@@ -21,7 +21,7 @@ class NotebookFindByFieldService(UseCase):
             notebook_list: List[Notebook] = self.repository.find_by_field(entity)
             
             if not notebook_list:
-                result.warning_msg = f"NotebookFindByFieldService service warning: There are no registred notebooks to connected user!"
+                result.info_msg = f"NotebookFindByFieldService info: There are no registred notebooks to connected user!"
                 result.entities = notebook_list
                 return result
             # import ipdb; ipdb.set_trace()
@@ -42,7 +42,7 @@ class NotebookFindByFieldService(UseCase):
 
             result.entities = notebook_list
         except Exception as error:
-            result.error_msg = f'NotebookFindByFieldService service error: {str(error)}'
+            result.error_msg = f'NotebookFindByFieldService service error: An error occurred while querying the database. >>> {str(error)}'
             result.entities = entity
             return result 
         return result

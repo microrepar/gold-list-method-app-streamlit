@@ -47,7 +47,11 @@ class PageSectionRegistry(UseCase):
         try:
             if entity.group == Group.A:
                 clone_entity = entity.clone()
+                clone_entity.notebook = entity.notebook
+                clone_entity.sentencelabels = [sl.clone() for sl in entity.sentencelabels]
                 clone_entity.distillation_at = clone_entity.created_at
+                clone_entity.distillation_actual = clone_entity.created_at
+
                 clone_entity.distillated = True
                 
                 clone_entity = self.repository.registry(entity=clone_entity)

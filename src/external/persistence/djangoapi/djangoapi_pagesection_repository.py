@@ -29,17 +29,12 @@ class ApiPageSectionRepository(PageSectionRepository):
         pagesection_dict = entity.to_dict()
         pagesection_dict.pop('id')
         pagesection_dict.pop('updated_at')
-        
+        pagesection_dict = {k: v for k, v in pagesection_dict.items() if v is not None}
 
         self.querystring.update(pagesection_dict)
         response = requests.post(url, headers=self.headers, json=self.querystring)
         response.raise_for_status()
         response_json = response.json()
-        
-        entity.id = response_json.get('id')
-        entity.created_at = string_to_date(response_json.get('created_at'))
-        entity.updated_at = string_to_date(response_json.get('updated_at'))
-        entity.page_number = response_json.get('page_number')
         
         pagesection = PageSection(
             id_=response_json.get('id'),

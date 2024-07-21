@@ -81,7 +81,7 @@ class ApiNotebookRepository(NotebookRepository):
             elif attr in 'user':
                 attr = 'user_id'
                 value = value.id
-            elif attr in 'id name sentence_list_size days_period foreign_idiom mother_idiom':
+            elif attr in 'username name sentence_list_size days_period foreign_idiom mother_idiom':
                 ...
             else:
                 raise Exception(f'This field "{attr}" cannot be used to find Notebook objects!')
