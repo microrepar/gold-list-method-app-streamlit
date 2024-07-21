@@ -9,45 +9,30 @@ import yaml
 from st_pages import add_page_title
 from yaml.loader import SafeLoader
 
+from src.core.user import User
 from src.adapters import Controller
 from src.core.notebook import Notebook
 from src.core.pagesection import Group
 
 st.set_page_config(layout="wide")
+add_page_title(layout="wide")  # Optional method to add title and icon to current page
 
 
 placeholder_container_msg = st.container()
 controller = Controller()
 
-# Either this or add_indentation() MUST be called on each page in your
-# app to add indendation in the sidebar
-add_page_title(layout="wide")  # Optional method to add title and icon to current page
 
-config_file = Path(__file__).parent / "config.yaml"
-with config_file.open("rb") as file:
-    config = yaml.load(file, Loader=SafeLoader)
+if st.session_state.get('username'):
+    
+    username = st.session_state['username']
+    user: User = st.session_state['credentials']['usernames'][username]['user']
 
-credentials = {"usernames": {}}
-config["credentials"] = credentials
-
-authenticator = stauth.Authenticate(
-    config[
-        "credentials"
-    ],  # credentials: Dict['usernames', Dict['<alias>', Dict['email | name | password', str]]]
-    config["cookie"]["name"],  # cookie: str
-    config["cookie"]["key"],  # cookie: str
-    config["cookie"]["expiry_days"],  # cookie: str
-    config["preauthorized"],  # preauthorized: List[str]
-)
-
-st.session_state["username"] = st.session_state["username"]
-
-if st.session_state.username:    
     #############################################################
-    # REQUEST USER FIND  BY FIELD
+    # REQUEST NOTEBOOK FIND  BY FIELD
     #############################################################
     request = {
-        'resource': '/notebook',
+        'resource': '/notebook/find_by_field_clean',
+        'notebook_user': {'user_id_': user.id},
     }
     resp = controller(request=request)
     messages = resp['messages']
@@ -58,25 +43,15 @@ if st.session_state.username:
         for msg in messages['error']:
             placeholder_container_msg.error(msg, icon='🚨')
     if 'info' in messages:
-        placeholder_container_msg.info('\n  - '.join(messages['info']), icon='⚠️')
+        placeholder_container_msg.info('\n  - '.join(messages['info']), icon='ℹ️')
     if 'warning' in messages:
-        placeholder_container_msg.warning('\n  - '.join(messages['warning']), icon='ℹ️')
+        placeholder_container_msg.warning('\n  - '.join(messages['warning']), icon='⚠️')
     if 'success' in messages:
         placeholder_container_msg.success('\n  - '.join(messages['success']), icon='✅')
     #############################################################
     #############################################################
 
     notebook_dict = {n.name: n for n in notebook_list}
-
-    if "error" in messages:
-        placeholder_container_msg.error("\n  - ".join(messages["error"]), icon="🚨")
-    if "info" in messages:
-        placeholder_container_msg.info("\n  - ".join(messages["info"]), icon="ℹ️")
-    if "warning" in messages:
-        placeholder_container_msg.warning("\n  - ".join(messages["warning"]), icon='⚠️')
-
-    if "success" in messages:
-        placeholder_container_msg.success("\n  - ".join(messages["success"]), icon="✅")
 
     if notebook_list:
         selected_notebook = st.sidebar.selectbox("**NOTEBOOK:**", notebook_dict.keys())
@@ -319,6 +294,7 @@ if st.session_state.username:
         st.markdown("[Create a Notebook](Add%20Notebook)")
 
     # ---- SIDEBAR ----
-    authenticator.logout(f"Logout | {st.session_state.username}", "sidebar")
+    st.session_state.authenticator.logout(f"Logout | {st.session_state.username}", "sidebar")
+    
 else:
     st.warning("Please access **[main page](/)** and enter your username and password.")

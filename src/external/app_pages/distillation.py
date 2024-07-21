@@ -1,13 +1,10 @@
 import datetime
-from pathlib import Path
 
 import pandas as pd
 import streamlit as st
-import streamlit_authenticator as stauth  # pip install streamlit-authenticator
-import yaml
 from st_pages import add_page_title
-from yaml.loader import SafeLoader
 
+from src.core.user import User
 from src.adapters import Controller
 from src.core.notebook import Notebook
 from src.core.pagesection import Group, PageSection
@@ -19,10 +16,8 @@ controller = Controller()
 
 add_page_title(layout="wide")  # Optional method to add title and icon to current page
 
-def get_group_dataframe(pagesection):    
-
-    sentencelabels  = None if pagesection is None else pagesection.sentencelabels
-    
+def get_group_dataframe(pagesection):
+    sentencelabels  = None if pagesection is None else pagesection.sentencelabels    
     columns = [
         'sentencelabel_id'
         "foreign_language",
@@ -40,36 +35,19 @@ def get_group_dataframe(pagesection):
     else:
         df['translated_sentences'] = ''
         df['remembered'] = False
-    # df.index = [sl.id for sl in pagesection.sentencelabels]
-        
     return df, pagesection
 
 
-config_file = Path(__file__).parent / 'config.yaml'
-with config_file.open('rb') as file:
-    config = yaml.load(file, Loader=SafeLoader)
-
-credentials = {'usernames': {}}
-config['credentials'] = credentials
-
-authenticator = stauth.Authenticate(
-    config['credentials'],              # credentials:      Dict['usernames', Dict['<alias>', Dict['email | name | password', str]]]
-    config['cookie']['name'],           # cookie:           str
-    config['cookie']['key'],            # cookie:           str
-    config['cookie']['expiry_days'],    # cookie:           str
-    config['preauthorized'],            # preauthorized:    List[str]
-)
-
-st.session_state['username'] = st.session_state['username']
-if st.session_state.username:
-    # ---- SIDEBAR ----
-    authenticator.logout(f"Logout | {st.session_state.username}", "sidebar")
+if st.session_state.get('username'):
+    username = st.session_state['username']
+    user: User = st.session_state['credentials']['usernames'][username]['user']
 
     #############################################################
-    # REQUEST NOTEBOOK GET ALL
+    # REQUEST NOTEBOOK FIND BY FIELD CLEAN
     #############################################################
     request = {
-        'resource': '/notebook',
+        'resource': '/notebook/find_by_field_clean',
+        'notebook_user': {'user_id_': user.id},
     }
     resp = controller(request=request)
     messages = resp['messages']
@@ -417,5 +395,8 @@ if st.session_state.username:
         st.warning('⚠️Attention! There are no notebooks registred!')
         st.markdown('[Create a Notebook](Add%20Notebook)')
 
+    st.sidebar.divider()
+    # ---- SIDEBAR ----
+    st.session_state.authenticator.logout(f"Logout | {st.session_state.username}", "sidebar")
 else:
     st.warning("Please access **[main page](/)** and enter your username and password.")

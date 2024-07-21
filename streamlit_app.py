@@ -16,37 +16,51 @@ ptvsd.wait_for_attach() # Only include this line if you always want to attach th
 load_dotenv()
 
 st.set_page_config(layout='wide')
+add_page_title(layout="wide")       # Optional method to add title and icon to current page
+
 
 placeholder_msg = st.empty()
+
 
 config_file = Path(__file__).parent / 'src/external/app_pages' / 'config.yaml'
 with config_file.open('rb') as file:
     config = yaml.load(file, Loader=SafeLoader)
 
-#############################################################
-### GET ALL USERS ###
-#############################################################
-controller = Controller()
-request    = {'resource': '/user'}
-resp       = controller(request=request)
-#############################################################
-messages = resp['messages']
-entities = resp['entities']
-#############################################################
+if 'entities' not in st.session_state:
+    #############################################################
+    ### GET ALL USERS ###
+    #############################################################
+    controller = Controller()
+    request    = {'resource': '/user'}
+    resp       = controller(request=request)
+    #############################################################
+    messages = resp['messages']
+    entities = resp['entities']
+    st.session_state.entities = entities
+    st.session_state.messages = messages
+    #############################################################
 
 
 credentials = {'usernames': {}}
-if not messages:
-    for user in entities:
+if not st.session_state.messages:
+    for user in st.session_state.entities:        
         credentials['usernames'].setdefault(user.username, {})
+        credentials['usernames'][user.username]['id'] = user.name
         credentials['usernames'][user.username]['name'] = user.name
         credentials['usernames'][user.username]['email'] = user.email
         credentials['usernames'][user.username]['password'] = user.password
+        credentials['usernames'][user.username]['user'] = user
 else:
-    placeholder_msg.warning('\n\n'.join(messages))
+    placeholder_msg.warning('\n\n'.join(st.session_state.messages))
 
-config['credentials'] = credentials
-st.session_state.credentials = credentials
+if 'credentials' not in st.session_state:
+    st.session_state.credentials = credentials
+
+if 'config' not in st.session_state:
+    st.session_state.config = config
+    st.session_state.config['credentials'] = st.session_state.credentials    
+
+config = st.session_state.config
 
 authenticator = stauth.Authenticate(
     config['credentials'],              # credentials:      Dict['usernames', Dict['<alias>', Dict['email | name | password', str]]]
@@ -55,6 +69,9 @@ authenticator = stauth.Authenticate(
     config['cookie']['expiry_days'],    # cookie:           str
     config['preauthorized'],            # preauthorized:    List[str]
 )
+
+if 'authenticator' not in st.session_state:
+    st.session_state.authenticator = authenticator
 
 name, authentication_status, username = authenticator.login("Login", "sidebar")
 
@@ -72,17 +89,17 @@ if authentication_status:
 
     if username == 'admin':
         show_pages(
-            [   Page("streamlit_app.py", "GOLD LIST METHOD", "🪙"),
+            [   Page("streamlit_app.py", "HOME", "🪙"),
                 Page("src/external/app_pages/calendar.py", "Calendar", "🗓️"),
                 # Page("src/external/app_pages/maps.py", "Folium", "🗺️"),
                 Page("src/external/app_pages/distillation.py", "Distillation", "🧠"),
                 Page("src/external/app_pages/headlist.py", "HeadList", "📃"),
                 # Section(name="Notebooks", icon=":books:"),
-                Section(name="NOTEBOOKS"),
+                # Section(name="NOTEBOOKS"),
                 # # Can use :<icon-name>: or the actual icon 
                 Page("src/external/app_pages/notebook.py", "Add Notebook", "📖"),
                 # Section(name="ADMIN", icon="⚙️"),
-                Section(name="LOGIN ADMIN"),
+                # Section(name="LOGIN ADMIN"),
                 Page("src/external/app_pages/user_update.py", "User update", "🔄️"),
                 # Page("src/external/app_pages/signup.py", "Sign up", "🔑"),
             ]
@@ -109,9 +126,6 @@ else:
     )
 
 
-add_page_title(layout="wide")
-  # Optional method to add title and icon to current page
-
 title = 'GOLD LIST METHOD'
 subtitle = 'The Key to Effective Language Learning'
 
@@ -128,8 +142,8 @@ Mastering a new language can open doors to incredible opportunities, whether for
 
 """
 
-# st.title(title)
-st.header(subtitle)
+st.header(title)
+st.subheader(subtitle)
 
 # Use HTML para justificar o texto
 for paragrafo in introdution.splitlines():

@@ -1,63 +1,24 @@
-import pickle
-from pathlib import Path
-
 import pandas as pd
 import streamlit as st  # pip install streamlit
-import streamlit_authenticator as stauth  # pip install streamlit-authenticator
-import yaml
 from st_pages import add_page_title
-from yaml.loader import SafeLoader
 
+from src.core.user import User
 from src.adapters import Controller
 
 # emojis: https://www.webfx.com/tools/emoji-cheat-sheet/
 st.set_page_config(layout="wide")
 
 add_page_title(layout="wide")
-
 placeholder_msg = st.empty()
 
-config_file = Path(__file__).parent / 'config.yaml'
-with config_file.open('rb') as file:
-    config = yaml.load(file, Loader=SafeLoader)
 
-#############################################################
-### GET ALL USERS ###
-#############################################################
-controller = Controller()
-request    = {'resource': '/user'}
-resp       = controller(request=request)
-#############################################################
-messages = resp['messages']
-entities = resp['entities']
-#############################################################
-
-credentials = {'usernames': {}}
-if not messages:
-    for user in entities:
-        credentials['usernames'].setdefault(user.username, {})
-        credentials['usernames'][user.username]['name'] = user.name
-        credentials['usernames'][user.username]['email'] = user.email
-        credentials['usernames'][user.username]['password'] = user.password
-else:
-    placeholder_msg.warning('\n\n'.join(messages))
-
-config['credentials'] = credentials
-st.session_state.credentials = credentials
-
-authenticator = stauth.Authenticate(
-    config['credentials'],              # credentials:      Dict['usernames', Dict['<alias>', Dict['email | name | password', str]]]
-    config['cookie']['name'],           # cookie:           str
-    config['cookie']['key'],            # cookie:           str
-    config['cookie']['expiry_days'],    # cookie:           str
-    config['preauthorized'],            # preauthorized:    List[str]
-)
-
-
-st.session_state['username'] = st.session_state['username']
-if st.session_state.username:
+if st.session_state.get('username'):
     # ---- SIDEBAR ----
-    authenticator.logout(f"Logout | {st.session_state.username}", "sidebar")
+    st.session_state.authenticator.logout(f"Logout | {st.session_state.username}", "sidebar")
+    
+    username = st.session_state['username']
+    credentials = st.session_state['credentials']
+    user: User = st.session_state['credentials']['usernames'][username]['user']
 
     try:
         col1, col2 = st.columns(2)

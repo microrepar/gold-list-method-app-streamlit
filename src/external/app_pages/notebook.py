@@ -1,47 +1,25 @@
-import datetime
-from pathlib import Path
-
 import pandas as pd
 import streamlit as st
-import streamlit_authenticator as stauth  # pip install streamlit-authenticator
-import yaml
 from st_pages import add_page_title
-from yaml.loader import SafeLoader
 
+from src.core.user import User
 from src.adapters import Controller
 
 controller = Controller()
 
 st.set_page_config(layout='wide')
+add_page_title(layout="wide")
 
-# Either this or add_indentation() MUST be called on each page in your
-# app to add indendation in the sidebar
 placehold_msg = st.empty()
-
 with placehold_msg:
     placehold_msg_container = st.container()
 
-add_page_title(layout="wide")
- 
-config_file = Path(__file__).parent / 'config.yaml'
-with config_file.open('rb') as file:
-    config = yaml.load(file, Loader=SafeLoader)
-
-credentials = {'usernames': {}}
-config['credentials'] = credentials
-
-authenticator = stauth.Authenticate(
-    config['credentials'],              # credentials:      Dict['usernames', Dict['<alias>', Dict['email | name | password', str]]]
-    config['cookie']['name'],           # cookie:           str
-    config['cookie']['key'],            # cookie:           str
-    config['cookie']['expiry_days'],    # cookie:           str
-    config['preauthorized'],            # preauthorized:    List[str]
-)
-
-st.session_state['username'] = st.session_state['username']
-if st.session_state.username:
+if st.session_state.get('username'):
     # ---- SIDEBAR ----
-    authenticator.logout(f"Logout | {st.session_state.username}", "sidebar")
+    st.session_state.authenticator.logout(f"Logout | {st.session_state.username}", "sidebar")
+    
+    username = st.session_state['username']
+    user: User = st.session_state['credentials']['usernames'][username]['user']
 
     with st.form("my_form"):   
         st.write("Create Notebook")
@@ -57,30 +35,6 @@ if st.session_state.username:
         submitted = st.form_submit_button("ADD NEW NOTEBOOK", type="primary", use_container_width=True)
 
     if submitted:
-        ######################################################
-        # FIND BY FIELD - USER
-        ######################################################
-        request = {
-            'resource': '/user/find_by_field',
-            'user_username': st.session_state.username
-        }
-        resp = controller(request=request)
-        messages = resp['messages']
-        entities = resp['entities']
-
-        if 'error' in messages:
-            for msg in messages['error']:
-                placehold_msg_container.error(msg, icon='🚨')
-            user_id = None
-        else:
-            user_id = entities[-1].id
-        if 'info' in messages:
-            placehold_msg_container.info('\n  - '.join(messages['info']), icon='ℹ️')
-        if 'warning' in messages:
-            placehold_msg_container.warning('\n  - '.join(messages['warning']), icon='⚠️')
-        if 'success' in messages:
-            placehold_msg_container.success('\n  - '.join(messages['success']), icon='✅')
-        ######################################################
 
         ######################################################
         # REGISTRY NOTEBOOK
@@ -92,7 +46,7 @@ if st.session_state.username:
             'notebook_days_period': days_period,
             'notebook_foreign_idiom': foreign_idiom,
             'notebook_mother_idiom': mother_idiom,
-            'notebook_user': {'user_id_': user_id},
+            'notebook_user': {'user_id_': user.id},
         }
 
         resp = controller(request=request)
@@ -111,36 +65,11 @@ if st.session_state.username:
         ######################################################
 
     ######################################################
-    # FIND BY FIELD - USER
-    ######################################################
-    request = {
-        'resource': '/user/find_by_field',
-        'user_username': st.session_state.username
-    }
-    resp = controller(request=request)
-    messages = resp['messages']
-    entities = resp['entities']
-
-    if 'error' in messages:
-        for msg in messages['error']:
-            placehold_msg_container.error(msg, icon='🚨')
-        user_id = None
-    else:
-        user_id = entities[-1].id
-    if 'info' in messages:
-        placehold_msg_container.info('\n  - '.join(messages['info']), icon='ℹ️')
-    if 'warning' in messages:
-        placehold_msg_container.warning('\n  - '.join(messages['warning']), icon='⚠️')
-    if 'success' in messages:
-        placehold_msg_container.success('\n  - '.join(messages['success']), icon='✅')
-    ######################################################
-    
-    ######################################################
     # FIND BY FIELD - NOTEBOOK
     ######################################################
     request = {
         'resource': '/notebook/find_by_field',
-        'notebook_user': {'user_id_': user_id}
+        'notebook_user': {'user_id_': user.id}
     }
     resp = controller(request)
 

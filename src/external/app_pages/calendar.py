@@ -13,36 +13,23 @@ from yaml.loader import SafeLoader
 
 from src.adapters import Controller
 from src.core.notebook import Notebook
+from src.core.user import User
 
 st.set_page_config(layout='wide')
+add_page_title(layout="wide")  # Optional method to add title and icon to current page
 
 placehold_container_msg = st.container()
 placehold_container_msg.empty()
 
-add_page_title(layout="wide")  # Optional method to add title and icon to current page
 
-config_file = Path(__file__).parent / 'config.yaml'
-with config_file.open('rb') as file:
-    config = yaml.load(file, Loader=SafeLoader)
-
-credentials = {'usernames': {}}
-config['credentials'] = credentials
-
-authenticator = stauth.Authenticate(
-    config['credentials'],              # credentials:      Dict['usernames', Dict['<alias>', Dict['email | name | password', str]]]
-    config['cookie']['name'],           # cookie:           str
-    config['cookie']['key'],            # cookie:           str
-    config['cookie']['expiry_days'],    # cookie:           str
-    config['preauthorized'],            # preauthorized:    List[str]
-)
-
-st.session_state['username'] = st.session_state['username']
-if st.session_state.username:
+if st.session_state.get('username'):
     # ---- SIDEBAR ----
-    authenticator.logout(f"Logout | {st.session_state.username}", "sidebar")
+    st.session_state.authenticator.logout(f"Logout | {st.session_state.username}", "sidebar")
     
-    controller = Controller()
+    username = st.session_state['username']
+    user: User = st.session_state['credentials']['usernames'][username]['user']    
 
+    controller = Controller()
     
     def get_pagesection_by_notebook(notebook: Notebook):
         request = {
@@ -65,10 +52,11 @@ if st.session_state.username:
 
     
     #############################################################
-    # REQUEST NOTEBOOK GET ALL
+    # REQUEST NOTEBOOK FIND BY FIELD CLEAN
     #############################################################
     request = {
-        'resource': '/notebook',
+        'resource': '/notebook/find_by_field_clean',
+        'notebook_user': {'user_id_': user.id},
     }
     resp = controller(request=request)
     messages = resp['messages']
