@@ -370,8 +370,9 @@ if st.session_state.get('username'):
         st.warning('⚠️Attention! There are no notebooks registred!')
         st.markdown('[Create a Notebook](Add%20Notebook)')
 
-    st.sidebar.divider()
     # ---- SIDEBAR ----
+    st.sidebar.divider()
     st.session_state.authenticator.logout(f"Logout | {st.session_state.username}", "sidebar")
+    st.sidebar.divider()
 else:
     st.warning("Please access **[main page](/)** and enter your username and password.")

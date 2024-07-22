@@ -1,15 +1,10 @@
-from pathlib import Path
+import streamlit as st
+from dotenv import load_dotenv
+from st_pages import Page, add_page_title
+
+from src.external.app_pages.auth_manager.authentication import streamlit_auth
 
 import ptvsd
-import streamlit as st
-import streamlit_authenticator as stauth  # pip install streamlit-authenticator
-import yaml
-from dotenv import load_dotenv
-from st_pages import Page, Section, add_page_title, show_pages
-from yaml.loader import SafeLoader
-
-from src.adapters.controller import Controller
-
 ptvsd.enable_attach(address=('localhost', 5678))
 ptvsd.wait_for_attach() # Only include this line if you always want to attach the debugger
 
@@ -18,116 +13,17 @@ load_dotenv()
 st.set_page_config(layout='wide')
 add_page_title(layout="wide")       # Optional method to add title and icon to current page
 
-
 placeholder_msg = st.empty()
+streamlit_auth(placeholder_msg)
 
-
-config_file = Path(__file__).parent / 'src/external/app_pages' / 'config.yaml'
-with config_file.open('rb') as file:
-    config = yaml.load(file, Loader=SafeLoader)
-
-if 'entities' not in st.session_state:
-    #############################################################
-    ### GET ALL USERS ###
-    #############################################################
-    controller = Controller()
-    request    = {'resource': '/user'}
-    resp       = controller(request=request)
-    #############################################################
-    messages = resp['messages']
-    entities = resp['entities']
-    st.session_state.entities = entities
-    st.session_state.messages = messages
-    #############################################################
-
-
-credentials = {'usernames': {}}
-if not st.session_state.messages:
-    for user in st.session_state.entities:        
-        credentials['usernames'].setdefault(user.username, {})
-        credentials['usernames'][user.username]['id'] = user.name
-        credentials['usernames'][user.username]['name'] = user.name
-        credentials['usernames'][user.username]['email'] = user.email
-        credentials['usernames'][user.username]['password'] = user.password
-        credentials['usernames'][user.username]['user'] = user
-else:
-    placeholder_msg.warning('\n\n'.join(st.session_state.messages))
-
-if 'credentials' not in st.session_state:
-    st.session_state.credentials = credentials
-
-if 'config' not in st.session_state:
-    st.session_state.config = config
-    st.session_state.config['credentials'] = st.session_state.credentials    
-
-config = st.session_state.config
-
-authenticator = stauth.Authenticate(
-    config['credentials'],              # credentials:      Dict['usernames', Dict['<alias>', Dict['email | name | password', str]]]
-    config['cookie']['name'],           # cookie:           str
-    config['cookie']['key'],            # cookie:           str
-    config['cookie']['expiry_days'],    # cookie:           str
-    config['preauthorized'],            # preauthorized:    List[str]
-)
-
-if 'authenticator' not in st.session_state:
-    st.session_state.authenticator = authenticator
-
-name, authentication_status, username = authenticator.login("Login", "sidebar")
-
-if authentication_status == False:
-    st.sidebar.error("Username/password is incorrect")
-
-if authentication_status == None:
-    st.sidebar.warning("Please enter your username and password to access application")
-
-if authentication_status:
+if st.session_state.get('username'):
     # ---- SIDEBAR ----
-    authenticator.logout(f"Logout | {st.session_state.username}", "sidebar")
-
-    st.session_state.username = username
-
-    if username == 'admin':
-        show_pages(
-            [   Page("streamlit_app.py", "HOME", "🪙"),
-                Page("src/external/app_pages/calendar.py", "Calendar", "🗓️"),
-                # Page("src/external/app_pages/maps.py", "Folium", "🗺️"),
-                Page("src/external/app_pages/distillation.py", "Distillation", "🧠"),
-                Page("src/external/app_pages/headlist.py", "HeadList", "📃"),
-                # Section(name="Notebooks", icon=":books:"),
-                # Section(name="NOTEBOOKS"),
-                # # Can use :<icon-name>: or the actual icon 
-                Page("src/external/app_pages/notebook.py", "Add Notebook", "📖"),
-                # Section(name="ADMIN", icon="⚙️"),
-                # Section(name="LOGIN ADMIN"),
-                Page("src/external/app_pages/user_update.py", "User update", "🔄️"),
-                # Page("src/external/app_pages/signup.py", "Sign up", "🔑"),
-            ]
-        )
-    else:
-        show_pages(
-            [   Page("streamlit_app.py", "GOLD LIST METHOD", "🪙"),
-                Page("src/external/app_pages/calendar.py", "Calendar", "🗓️"),
-                # Section(name="Notebooks", icon=":books:"),
-                # # Can use :<icon-name>: or the actual icon 
-                Page("src/external/app_pages/headlist.py", "HeadList", "📃"),
-                Page("src/external/app_pages/distillation.py", "Distillation", "🧠"),
-                # Page("src/external/app_pages/notebook.py", "Notebook", "📖"),
-            ]
-        )
+    st.session_state.authenticator.logout(f"Logout | {st.session_state.username}", "sidebar")
+        
 
 
-    placehold_container_msg = st.container()
-    placehold_container_msg.empty()
-
-else:
-    show_pages(
-        [Page("streamlit_app.py", "GOLD LIST METHOD", "🪙"),]
-    )
-
-
-title = 'GOLD LIST METHOD'
-subtitle = 'The Key to Effective Language Learning'
+title = st.header('GOLD LIST METHOD')
+subtitle = st.subheader('The Key to Effective Language Learning')
 
 introdution = """
 Have you ever dreamed of mastering a new language but felt overwhelmed by the amount of vocabulary you need to learn? If so, the "Gold List Method" might be the solution you've been searching for. This language learning method offers a unique and proven approach to memorizing words and phrases, enabling you to achieve remarkable results.
@@ -141,9 +37,6 @@ The Gold List Method is designed to help you remember words and phrases for an e
 Mastering a new language can open doors to incredible opportunities, whether for travel, work, or connecting with people from around the world. The "Gold List Method" offers a proven and effective approach to accelerate your language learning progress. So, if you'd like to experience the Method in a practical and efficient way, we invite you to explore our application implemented with this revolutionary technique. Discover how this method can make learning a new language a more enjoyable and successful journey. Give the Gold List Method a chance, and be amazed by the results it can offer. Start your journey of effective and memorable language learning today!
 
 """
-
-st.header(title)
-st.subheader(subtitle)
 
 # Use HTML para justificar o texto
 for paragrafo in introdution.splitlines():

@@ -14,6 +14,7 @@ from yaml.loader import SafeLoader
 from src.adapters import Controller
 from src.core.notebook import Notebook
 from src.core.user import User
+from src.external.app_pages.auth_manager.authentication import streamlit_auth
 
 st.set_page_config(layout='wide')
 add_page_title(layout="wide")  # Optional method to add title and icon to current page
@@ -21,11 +22,7 @@ add_page_title(layout="wide")  # Optional method to add title and icon to curren
 placehold_container_msg = st.container()
 placehold_container_msg.empty()
 
-
 if st.session_state.get('username'):
-    # ---- SIDEBAR ----
-    st.session_state.authenticator.logout(f"Logout | {st.session_state.username}", "sidebar")
-    
     username = st.session_state['username']
     user: User = st.session_state['credentials']['usernames'][username]['user']    
 
@@ -157,5 +154,10 @@ if st.session_state.get('username'):
     else:
         st.warning('⚠️Attention! There are no notebooks registred!')
         st.markdown('[Create a Notebook](Add%20Notebook)')
+
+    # ---- SIDEBAR ----
+    st.sidebar.divider()
+    st.session_state.authenticator.logout(f"Logout | {st.session_state.username}", "sidebar")
+    st.sidebar.divider()
 else:
     st.warning("Please access **[main page](/)** and enter your username and password.")
