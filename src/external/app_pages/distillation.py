@@ -17,7 +17,11 @@ controller = Controller()
 add_page_title(layout="wide")  # Optional method to add title and icon to current page
 
 def get_group_dataframe(pagesection):
-    sentencelabels  = None if pagesection is None else pagesection.sentencelabels    
+    sentencelabels = None
+    if pagesection:
+        if pagesection.sentencelabels:
+            sentencelabels = pagesection.sentencelabels
+
     columns = [
         'sentencelabel_id'
         "foreign_language",
@@ -82,10 +86,10 @@ if st.session_state.get('username'):
         
         notebook: Notebook = notebook_dict.get(selected_notebook)
         #############################################################
-        # REQUEST PAGESECTION FIND BY FIELD - NOTEBOOK AND DISTILLATION_AT
+        # REQUEST PAGESECTION FIND BY FIELD DEPTH - NOTEBOOK AND DISTILLATION_AT
         #############################################################
         request = {
-            'resource': '/pagesection/find_by_field',
+            'resource': '/pagesection/find_by_field/depth',
             'pagesection_notebook': notebook.to_dict_with_prefix(),
             'pagesection_distillation_at': selected_day,
         }

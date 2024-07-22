@@ -23,6 +23,11 @@ class NotebookRepository(Repository, Protocol):
     def get_by_id(self, entity: Notebook) -> Notebook:
         """Get by id registred notebooks in database
         """
+   
+    @abstractmethod
+    def find_by_field_depth(self, entity: Notebook) -> Notebook:
+        """Get by id registred notebooks in database
+        """
     
     @abstractmethod
     def find_by_field(self, entity: Notebook) -> List[Optional[Notebook]]:

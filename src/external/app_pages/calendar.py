@@ -27,32 +27,11 @@ if st.session_state.get('username'):
     user: User = st.session_state['credentials']['usernames'][username]['user']    
 
     controller = Controller()
-    
-    def get_pagesection_by_notebook(notebook: Notebook):
-        request = {
-            'resource': '/pagesection/find_by_field_clean',
-            'pagesection_notebook': notebook.to_dict_with_prefix(),
-        }
-        resp = controller(request=request)
-        messages = resp['messages']
-        entities = resp['entities']
-        if 'error' in messages:
-            for msg in messages['error']:
-                placehold_container_msg.error(msg, icon='🚨')
-        if 'info' in messages:
-            placehold_container_msg.info('\n  - '.join(messages['info']), icon='⚠️')
-        if 'warning' in messages:
-            placehold_container_msg.warning('\n  - '.join(messages['warning']), icon='ℹ️')
-        if 'success' in messages:
-            placehold_container_msg.success('\n  - '.join(messages['success']), icon='✅')
-        return entities
-
-    
     #############################################################
     # REQUEST NOTEBOOK FIND BY FIELD CLEAN
     #############################################################
     request = {
-        'resource': '/notebook/find_by_field_clean',
+        'resource': '/notebook/find_by_field_depth',
         'notebook_user': {'user_id_': user.id},
     }
     resp = controller(request=request)
@@ -73,18 +52,10 @@ if st.session_state.get('username'):
     #############################################################
 
     if 'flag_alter_calendar' not in st.session_state:
-        st.session_state.flag_alter_calendar = True
-    
-    if 'flag_events' not in st.session_state:
-        st.session_state.flag_events = True
-    
-    if 'events' not in st.session_state:
-        st.session_state.events = []
-   
+        st.session_state.flag_alter_calendar = True    
 
     def on_change_notebook():
         st.session_state.flag_alter_calendar = not st.session_state.flag_alter_calendar
-        st.session_state.flag_events = True
 
     notebook_dict = {n.name: n for n in notebook_list}
     if len(notebook_list) > 0:
@@ -127,20 +98,18 @@ if st.session_state.get('username'):
         }
             
         mode = 'daygrid'
+        events = [ps.get_distillation_event() for ps in notebook.pagesection_list]
 
-        if st.session_state.flag_events:
-            st.session_state.events = [ps.get_distillation_event() for ps in get_pagesection_by_notebook(notebook)]
-            st.session_state.flag_events = False
 
         if st.session_state.flag_alter_calendar:
             state = calendar(
-                events=st.session_state.events,
+                events=events,
                 options=calendar_options,
                 key=mode+'1',
             )
         else:     
             state = calendar(
-                events=st.session_state.events,
+                events=events,
                 options=calendar_options,
                 key=mode+'2',
             )

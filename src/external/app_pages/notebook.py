@@ -92,9 +92,10 @@ if st.session_state.get('username'):
     notebook_list = resp.get('entities')
     if notebook_list:
         df_list = (pd.DataFrame(n.data_to_dataframe()) for n in notebook_list)
-        df = pd.concat(df_list, ignore_index=True)
+        df = pd.concat(df_list, ignore_index=False)
         st.markdown('#### Last Resgistred Notebooks')
-        st.dataframe(df.iloc[:, 1:], hide_index=True, use_container_width=True)
+        columns = notebook_list[-1].get_columns_from_dataframe()
+        st.dataframe(df[columns], hide_index=True, use_container_width=True)
         st.markdown(f'Lines total: {df.shape[0]}')
     else:
         st.subheader('Notebooks')

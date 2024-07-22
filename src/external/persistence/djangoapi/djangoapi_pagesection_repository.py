@@ -6,6 +6,8 @@ import requests
 from config import Config
 from src.core.notebook import Notebook
 from src.core.pagesection import Group, PageSection, PageSectionRepository
+from src.core.sentencelabel import SentenceLabel
+from src.core.sentencetranslation import SentenceTranslation
 from src.core.shared.utils import date_to_string, string_to_date
 
 from .. import repository_map
@@ -147,6 +149,114 @@ class ApiPageSectionRepository(PageSectionRepository):
                 pagesection.notebook = entity.notebook
             pagesection_list.append(pagesection)
             
+        return pagesection_list
+    
+    def find_by_field_depth(self, entity: PageSection) -> List[PageSection]:
+        url = self.url + f'find_by_field/depth/'
+        filters = {k: v for k, v in entity.__dict__.items() if not k.startswith('_') and v is not None}
+        kwargs = {}
+        for attr, value in filters.items():
+            if bool(value) is False:
+                continue
+            if isinstance(value, Notebook):
+                attr = "notebook_id"
+                value = value.id
+            elif isinstance(value, Group):
+                attr = "group"
+                value = value.value
+            elif isinstance(value, PageSection):
+                attr = "created_by_id"
+                value = value.created_by.id
+            elif attr in "created_at":
+                if isinstance(value, datetime.date):
+                    value = date_to_string(value)
+                    # value = pd.to_datetime(value).strftime("%Y-%m-%d")
+                elif "#" in value:
+                    value = None
+            elif attr in 'distillation_at':
+                if value:
+                    value = date_to_string(value)
+            elif attr in "section_number distillated distillation_at":
+                ...
+            else:
+                raise Exception(
+                    f'This field "{attr}" cannot be used to find PageSection objects!'
+                )
+            kwargs[attr] = value
+        
+        self.querystring.update(kwargs)
+        response = requests.post(url, headers=self.headers, json=self.querystring)
+        response.raise_for_status()
+        response_json = response.json()
+
+        pagesection_list = []
+        for pagesection_dict in response_json:
+            sl_list = []
+            for sentencelabel_dict in pagesection_dict.get('sentencelabels'):
+                sentencelabel = SentenceLabel(
+                    id_=sentencelabel_dict.get('id'),
+                    created_at=string_to_date(sentencelabel_dict.get('created_at')),
+                    updated_at=string_to_date(sentencelabel_dict.get('updated_at')),
+                    pagesection=sentencelabel_dict.get('pagesection'),
+                    translation=sentencelabel_dict.get('translation'),
+                    memorialized=sentencelabel_dict.get('memorialized')
+                )
+                sentencetranslation_dict = sentencelabel_dict.get('sentencetranslation')
+                sentencetranslation = SentenceTranslation(
+                    id_=sentencetranslation_dict.get('id'),
+                    created_at=string_to_date(sentencetranslation_dict.get('created_at')),
+                    updated_at=string_to_date(sentencetranslation_dict.get('updated_at')),
+                    foreign_language=sentencetranslation_dict.get('foreign_language_sentence'),
+                    mother_tongue=sentencetranslation_dict.get('mother_language_sentence'),
+                    foreign_idiom=sentencetranslation_dict.get('foreign_language_idiom'),
+                    mother_idiom=sentencetranslation_dict.get('mother_language_idiom')
+                )
+                sentencelabel.sentencetranslation = sentencetranslation
+                sl_list.append(sentencelabel)
+
+            notebook_dict = pagesection_dict.get('notebook')
+            notebook = Notebook(
+                id_=notebook_dict.get('id'),
+                name=notebook_dict.get('name'),
+                created_at=string_to_date(notebook_dict.get('created_at')),
+                updated_at=string_to_date(notebook_dict.get('updated_at')),
+                sentence_list_size=[],
+                days_period=notebook_dict.get('days_period'),
+                foreign_idiom=notebook_dict.get('foreign_idiom'),
+                mother_idiom=notebook_dict.get('mother_idiom'),
+            )
+
+            created_by = None
+            created_by_dict = pagesection_dict.get('created_by')
+            if created_by_dict:
+                created_by = PageSection(
+                    id_=created_by_dict.get('id'),
+                    created_at=string_to_date(created_by_dict.get('created_at')),
+                    sentencelabels=[],
+                    page_number=created_by_dict.get('page_number'),
+                    group=Group[created_by_dict.get('group')],
+                    distillation_at=string_to_date(created_by_dict.get('distillation_at')),
+                    distillated=created_by_dict.get('distillated'),
+                    distillation_actual=created_by_dict.get('distillation_actual')
+                )
+
+            pagesection = PageSection(
+                id_=pagesection_dict.get('id'),
+                created_at=string_to_date(pagesection_dict.get('created_at')),
+                # created_by=pagesection_dict.get('created_by'),
+                # notebook=pagesection_dict.get('notebook'),
+                notebook=entity.notebook,
+                # sentencelabels=entity.sentencelabels,
+                page_number=pagesection_dict.get('page_number'),
+                group=Group[pagesection_dict.get('group')],
+                distillation_at=string_to_date(pagesection_dict.get('distillation_at')),
+                distillated=pagesection_dict.get('distillated'),
+                distillation_actual=pagesection_dict.get('distillation_actual')
+            )
+            pagesection.created_by = created_by
+            pagesection.notebook = notebook
+            pagesection.sentencelabels = sl_list
+            pagesection_list.append(pagesection)            
         return pagesection_list
 
     def get_last_page_number(self, entity: PageSection = None) -> int:
