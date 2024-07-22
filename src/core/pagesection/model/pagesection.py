@@ -155,7 +155,7 @@ class PageSection(Entity):
     
     def get_columns_from_dataframe(self):
         return [
-            # 'id',
+            # 'Page section id',
             # 'notebook_id',
             # 'updated_at',
             'notebook_name',
@@ -173,7 +173,7 @@ class PageSection(Entity):
         if self.created_by is not None:
             created_by_id = self.created_by.page_number
         return [{    
-            'id'                  : self.id,
+            'Page section id'                  : self.id,
             'page'                : self.page_number,
             'group'               : self.group.value,
             'created_at'          : self.created_at,

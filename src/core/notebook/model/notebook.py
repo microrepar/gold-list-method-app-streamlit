@@ -48,8 +48,17 @@ class Notebook(Entity):
         return msg
     
     def get_columns_from_dataframe(self):
-        return ['id', 'name', 'created_at', 'updated_at', 'sentence_list_size', 
-                'days_period', 'foreign_idiom', 'mother_idiom', 'user_id',]
+        return [
+            # 'Id', 
+            'Name', 
+            'Created at', 
+            'Updated at', 
+            'List size', 
+            'Period', 
+            'Foreign idiom', 
+            'mother_idiom', 
+            'User id',
+        ]
 
     def data_to_dataframe(self):
         user_id = None
@@ -57,15 +66,15 @@ class Notebook(Entity):
             user_id = self.user.id
         return [
             {
-                'id'                 : self.id,
-                'name'               : self.name,
-                'created_at'         : self.created_at,
-                'updated_at'         : self.updated_at,
-                'sentence_list_size' : self.sentence_list_size,
-                'days_period'        : self.days_period,
-                'foreign_idiom'      : self.foreign_idiom,
-                'mother_idiom'       : self.mother_idiom,
-                'user_id'            : user_id
+                'Id': self.id,
+                'Name': self.name,
+                'Created at': self.created_at,
+                'Updated at': self.updated_at,
+                'List size': self.sentence_list_size,
+                'Period': self.days_period,
+                'Foreign idiom': self.foreign_idiom,
+                'mother_idiom': self.mother_idiom,
+                'User id': user_id
             }
         ]
     
