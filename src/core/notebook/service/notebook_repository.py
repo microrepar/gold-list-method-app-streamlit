@@ -33,3 +33,8 @@ class NotebookRepository(Repository, Protocol):
     def find_by_field(self, entity: Notebook) -> List[Optional[Notebook]]:
         """Find by id registred notebooks in database
         """
+    
+    @abstractmethod
+    def find_by_field_clean(self, entity: Notebook) -> List[Optional[Notebook]]:
+        """Find by id registred notebooks in database
+        """

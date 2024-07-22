@@ -18,7 +18,7 @@ class NotebookFindByFieldCleanService(UseCase):
         result = Result()
         
         try:
-            notebook_list: List[Notebook] = self.repository.find_by_field(entity)
+            notebook_list: List[Notebook] = self.repository.find_by_field_clean(entity)
             result.entities = notebook_list
             
             if not notebook_list:
