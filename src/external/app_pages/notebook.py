@@ -35,7 +35,6 @@ if st.session_state.get('username'):
         submitted = st.form_submit_button("ADD NEW NOTEBOOK", type="primary", use_container_width=True)
 
     if submitted:
-
         ######################################################
         # REGISTRY NOTEBOOK
         ######################################################
@@ -65,10 +64,10 @@ if st.session_state.get('username'):
         ######################################################
 
     ######################################################
-    # FIND BY FIELD - NOTEBOOK
+    # FIND BY FIELD CLEAN - NOTEBOOK
     ######################################################
     request = {
-        'resource': '/notebook/find_by_field',
+        'resource': '/notebook/find_by_field_clean',
         'notebook_user': {'user_id_': user.id}
     }
     resp = controller(request)
