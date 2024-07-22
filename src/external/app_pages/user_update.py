@@ -11,7 +11,6 @@ st.set_page_config(layout="wide")
 add_page_title(layout="wide")
 placeholder_msg = st.empty()
 
-
 if st.session_state.get('username'):
     # ---- SIDEBAR ----
     st.session_state.authenticator.logout(f"Logout | {st.session_state.username}", "sidebar")

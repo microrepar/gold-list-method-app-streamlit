@@ -4,10 +4,10 @@ import pandas as pd
 import streamlit as st
 from st_pages import add_page_title
 
-from src.core.user import User
 from src.adapters import Controller
 from src.core.notebook import Notebook
 from src.core.pagesection import Group, PageSection
+from src.core.user import User
 
 st.set_page_config(layout='wide')
 

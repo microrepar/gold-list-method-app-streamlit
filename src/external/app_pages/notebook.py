@@ -2,8 +2,8 @@ import pandas as pd
 import streamlit as st
 from st_pages import add_page_title
 
-from src.core.user import User
 from src.adapters import Controller
+from src.core.user import User
 
 controller = Controller()
 

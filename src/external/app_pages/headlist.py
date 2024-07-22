@@ -1,18 +1,14 @@
 import contextlib
 import datetime
-from pathlib import Path
 
 import pandas as pd
 import streamlit as st
-import streamlit_authenticator as stauth  # pip install streamlit-authenticator
-import yaml
 from st_pages import add_page_title
-from yaml.loader import SafeLoader
 
-from src.core.user import User
 from src.adapters import Controller
 from src.core.notebook import Notebook
 from src.core.pagesection import Group
+from src.core.user import User
 
 st.set_page_config(layout="wide")
 add_page_title(layout="wide")  # Optional method to add title and icon to current page
@@ -28,10 +24,10 @@ if st.session_state.get('username'):
     user: User = st.session_state['credentials']['usernames'][username]['user']
 
     #############################################################
-    # REQUEST NOTEBOOK FIND  BY FIELD
+    # REQUEST NOTEBOOK FIND BY FIELD DEPTH
     #############################################################
     request = {
-        'resource': '/notebook/find_by_field_clean',
+        'resource': '/notebook/find_by_field_depth',
         'notebook_user': {'user_id_': user.id},
     }
     resp = controller(request=request)
@@ -55,31 +51,7 @@ if st.session_state.get('username'):
 
     if notebook_list:
         selected_notebook = st.sidebar.selectbox("**NOTEBOOK:**", notebook_dict.keys())
-
         notebook: Notebook = notebook_dict.get(selected_notebook)
-        #############################################################
-        # REQUEST PAGESECTION FIND BY FIELD CLEAN
-        #############################################################
-        request = {
-            'resource': '/pagesection/find_by_field_clean',
-            'pagesection_notebook': notebook.to_dict_with_prefix(),
-        }
-        resp = controller(request=request)
-        messages = resp['messages']
-        entities = resp['entities']
-        notebook.pagesection_list = entities
-        # RESPONSE MESSAGES##########################################        
-        if 'error' in messages:
-            for msg in messages['error']:
-                placeholder_container_msg.error(msg, icon='🚨')
-        if 'info' in messages:
-            placeholder_container_msg.info('\n  - '.join(messages['info']), icon='⚠️')
-        if 'warning' in messages:
-            placeholder_container_msg.warning('\n  - '.join(messages['warning']), icon='ℹ️')
-        if 'success' in messages:
-            placeholder_container_msg.success('\n  - '.join(messages['success']), icon='✅')
-        #############################################################
-        #############################################################
 
         st.subheader(f"{notebook.name.upper()} NOTEBOOK")
         selected_day = st.sidebar.date_input(

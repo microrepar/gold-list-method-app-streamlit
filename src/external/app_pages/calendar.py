@@ -1,20 +1,14 @@
 """_summary_
 """
-
 import datetime
-from pathlib import Path
 
 import streamlit as st
-import streamlit_authenticator as stauth  # pip install streamlit-authenticator
-import yaml
 from st_pages import add_page_title
 from streamlit_calendar import calendar
-from yaml.loader import SafeLoader
 
 from src.adapters import Controller
 from src.core.notebook import Notebook
 from src.core.user import User
-from src.external.app_pages.auth_manager.authentication import streamlit_auth
 
 st.set_page_config(layout='wide')
 add_page_title(layout="wide")  # Optional method to add title and icon to current page
@@ -28,7 +22,7 @@ if st.session_state.get('username'):
 
     controller = Controller()
     #############################################################
-    # REQUEST NOTEBOOK FIND BY FIELD CLEAN
+    # REQUEST NOTEBOOK FIND BY FIELD DEPTH
     #############################################################
     request = {
         'resource': '/notebook/find_by_field_depth',
@@ -70,9 +64,6 @@ if st.session_state.get('username'):
 
         col_group_1, col_group_2, col_group_3, col_group_4 = st.sidebar.columns(4)
 
-        # st.sidebar.markdown("[Add New Headlist](Add%20HeadList)")
-        # st.sidebar.markdown("[Distillation](Distillation)")
-        # st.sidebar.divider()
         calendar_resources = [
             {"id": "a", "building": "Building A", "title": "Group A"},
             {"id": "b", "building": "Building A", "title": "Group B"},
@@ -98,16 +89,16 @@ if st.session_state.get('username'):
         }
             
         mode = 'daygrid'
-        events = [ps.get_distillation_event() for ps in notebook.pagesection_list]
-
 
         if st.session_state.flag_alter_calendar:
+            events = [ps.get_distillation_event() for ps in notebook.pagesection_list]
             state = calendar(
                 events=events,
                 options=calendar_options,
                 key=mode+'1',
             )
-        else:     
+        else:
+            events = [ps.get_distillation_event() for ps in notebook.pagesection_list]
             state = calendar(
                 events=events,
                 options=calendar_options,
