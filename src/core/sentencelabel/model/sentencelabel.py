@@ -61,10 +61,10 @@ class SentenceLabel(Entity):
         if self.sentencetranslation:
             sentencetranslation_id = self.sentencetranslation.id
             sentencetranslation_dict = self.sentencetranslation.to_dict()
-
-        pagesection_id = None
+        pagesection_id = None        
         if self.pagesection:
             pagesection_id = self.pagesection.id
+            
         return {
             'id'                     : self.id,
             'created_at'             : date_to_string(self.created_at),

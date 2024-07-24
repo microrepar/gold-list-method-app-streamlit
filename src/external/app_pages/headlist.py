@@ -13,12 +13,11 @@ from src.core.user import User
 st.set_page_config(layout="wide")
 add_page_title(layout="wide")  # Optional method to add title and icon to current page
 
-
 placeholder_container_msg = st.container()
-controller = Controller()
-
 
 if st.session_state.get('username'):
+    
+    controller = Controller()
     
     username = st.session_state['username']
     user: User = st.session_state['credentials']['usernames'][username]['user']
@@ -48,7 +47,6 @@ if st.session_state.get('username'):
     #############################################################
 
     notebook_dict = {n.name: n for n in notebook_list}
-
     if notebook_list:
         selected_notebook = st.sidebar.selectbox("**NOTEBOOK:**", notebook_dict.keys())
         notebook: Notebook = notebook_dict.get(selected_notebook)
@@ -67,10 +65,39 @@ if st.session_state.get('username'):
             p.created_at: p for p in notebook.pagesection_list if p.group == Group.A
         }
         selected_pagesection_day = pagesection_dict.get(selected_day)
+        
+        non_msg = True
+        if st.session_state.get('flag_success_msg'):
+            msg_success = st.session_state.pop('flag_success_msg')
+            placeholder_container_msg.success(msg_success)
+            st.toast("Page section was inserted successfully.")
+            non_msg = False
 
-        new_data_add = []
+        if st.session_state.get('flag_info_msg'):
+            info_msg = st.session_state.pop('flag_info_msg')
+            placeholder_container_msg.info(info_msg)
+            non_msg = False
+            
+        if st.session_state.get('flag_warning_msg'):
+            warning_msg = st.session_state.pop('flag_warning_msg')
+            placeholder_container_msg.warning(warning_msg)
+            non_msg = False
 
-        if selected_pagesection_day is None:
+        if st.session_state.get('flag_error_msg'):
+            error_msg = st.session_state.pop('flag_error_msg')
+            placeholder_container_msg.error(error_msg)
+            st.toast("Something went wrong!")
+            non_msg = False
+        
+        if non_msg and selected_pagesection_day:
+            placeholder_container_msg.info(
+                f"⚠️There is already a page for the group "
+                f"{selected_pagesection_day.group.value} "
+                f"and selected day ({selected_pagesection_day.created_at})."
+            )
+
+
+        if non_msg and selected_pagesection_day is None:        
             #############################################################
             ### FIND SENTENCES BY NP GROUP
             #############################################################
@@ -90,23 +117,19 @@ if st.session_state.get('username'):
                     for msg in messages["error"]:
                         st.error(msg, icon="🚨")
             elif sentence_list:
-                placeholder_container_msg.info(
-                    f"{len(sentence_list)} sentences were added to table bellow and are free to compose a new headlist.",
-                    icon="ℹ️",
-                )
-
+                mensagem_info = (f'{len(sentence_list)} sentences were added to table '
+                                 'bellow and are free to compose a new headlist.')
+                placeholder_container_msg.info(mensagem_info, icon="ℹ️")
             if "info" in messages:
                 placeholder_container_msg.info("\n  - ".join(messages["info"]), icon="ℹ️")
             if "warning" in messages:
-                placeholder_container_msg.warning(
-                    "\n  - ".join(messages["warning"]), icon='⚠️'
-                )
+                placeholder_container_msg.warning("\n  - ".join(messages["warning"]), icon='⚠️')
             if "success" in messages:
-                placeholder_container_msg.success(
-                    "\n  - ".join(messages["success"]), icon="✅"
-                )
+                placeholder_container_msg.success("\n  - ".join(messages["success"]), icon="✅")
             #############################################################
-
+        
+        new_data_add = []
+        new_data_block = []
         for i in range(1, notebook.sentence_list_size + 1):
 
             sentence_foreign_str = ""
@@ -123,7 +146,17 @@ if st.session_state.get('username'):
                 }
             )
 
-        df_edit = pd.DataFrame(new_data_add)
+            new_data_block.append(
+                {
+                    "foreign_language": 'Disabled',
+                    "mother_tongue": 'There is already a page for the group A and selected day (2024-07-23).',
+                }
+            )
+
+        if selected_pagesection_day is None:
+            df_edit = pd.DataFrame(new_data_add)
+        else:
+            df_edit = pd.DataFrame(new_data_block)
 
         column_configuration_data = {
             "foreign_language": st.column_config.TextColumn(
@@ -140,28 +173,21 @@ if st.session_state.get('username'):
 
         st.markdown("**Add new HeadList**")
 
-        placeholder_sentences_sheet = st.empty()
-        placehold_btn_insert = st.empty()
-        placehold_page_exists = st.empty()
-
-        df_result = placeholder_sentences_sheet.data_editor(
+        df_result = st.data_editor(
             df_edit,
             column_config=column_configuration_data,
             num_rows="fixed",
             hide_index=True,
             use_container_width=True,
+            disabled=False if selected_pagesection_day is None else True,
         )
+        
+        placehold_btn_insert = st.empty()
+        placehold_page_exists = st.empty()
 
         df_result["foreign_idiom"] = notebook.foreign_idiom
         df_result["mother_idiom"] = notebook.mother_idiom
         df_result["created_at"] = selected_day
-
-        if selected_pagesection_day is not None:
-            placeholder_sentences_sheet.warning(
-                f"⚠️There is already a page for the group "
-                f"{selected_pagesection_day.group.value} "
-                f"and selected day ({selected_pagesection_day.created_at})."
-            )
 
         if placehold_btn_insert.button(
             "INSERT NEW LIST",
@@ -183,16 +209,15 @@ if st.session_state.get('username'):
                 sentencelabel_dict_list.append(label_dict)
             
             ###############################################################
-            # INSERT PAGESECTION
+            # PAGESECTION REGISTRY DEPTH
             ###############################################################
             request = {
-                "resource": "/pagesection/registry",
+                "resource": "/pagesection/registry/depth",
                 "pagesection_notebook": notebook.to_dict_with_prefix(),
                 "pagesection_group": Group.HEADLIST,
                 "pagesection_created_at": selected_day,
                 "pagesection_sentencelabels": sentencelabel_dict_list,
             }
-
             ###############################################################
             # FrontController
             resp = controller(request=request)
@@ -202,31 +227,26 @@ if st.session_state.get('username'):
             # FeedBack
             if "error" in messages:
                 for msg in messages["error"]:
-                    placeholder_container_msg.error(msg, icon="🚨")
-
-                st.toast("Something went wrong!")
+                     st.session_state['flag_error_msg'] = "\n  - ".join(messages["error"])
             elif entities:
                 notebook.pagesection_list.extend(entities)
-                placeholder_sentences_sheet.success(
-                    f"{entities[-1]} was inserted successfully!"
-                )
-                placeholder_container_msg.success(
-                    f"{entities[-1]} was inserted successfully!"
-                )
-                placehold_btn_insert.empty()
-                st.toast("Page section was inserted successfully.")
+                st.session_state['flag_success_msg'] = f"{entities[-1]} was inserted successfully!\n"
+
+            if "success" in messages:
+                if st.session_state.get('flag_success_msg'):
+                    st.session_state['flag_success_msg'] += "\n  - ".join(messages["success"])
+                else:
+                    st.session_state['flag_success_msg'] = "\n  - ".join(messages["success"])
 
             if "info" in messages:
-                placeholder_container_msg.info("\n  - ".join(messages["info"]), icon="ℹ️")
+                st.session_state['flag_info_msg'] = "\n  - ".join(messages["info"])
+            
             if "warning" in messages:
-                placeholder_container_msg.warning(
-                    "\n  - ".join(messages["warning"]), icon='⚠️'
-                )
-            if "success" in messages:
-                placeholder_container_msg.success(
-                    "\n  - ".join(messages["success"]), icon="✅"
-                )
+                st.session_state['flag_warning_msg'] = "\n  - ".join(messages["warning"])
             ###############################################################
+            ###############################################################
+            
+            st.rerun()
 
         qty_group_a = notebook.count_pagesection_by_group(group=Group.A)
         qty_group_b = notebook.count_pagesection_by_group(group=Group.B)
@@ -269,4 +289,4 @@ if st.session_state.get('username'):
     st.session_state.authenticator.logout(f"Logout | {st.session_state.username}", "sidebar")
     
 else:
-    st.warning("Please access **[main page](/)** and enter your username and password.")
+    st.warning("Please access **[Home page](/)** and enter your username and password.")
