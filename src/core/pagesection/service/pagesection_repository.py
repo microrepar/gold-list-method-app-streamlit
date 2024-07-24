@@ -13,6 +13,11 @@ class PageSectionRepository(Repository, Protocol):
     def registry(self, entity: PageSection) -> PageSection:
         """Registry a PageSection into database 
         """
+    
+    @abstractmethod
+    def registry_depth(self, entity: PageSection) -> PageSection:
+        """Registry a PageSection into database 
+        """
 
     @abstractmethod
     def get_all(self, entity: PageSection = None) -> List[PageSection]:

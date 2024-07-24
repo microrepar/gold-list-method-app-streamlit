@@ -104,10 +104,11 @@ class PageSection(Entity):
 
     @distillated.setter
     def distillated(self, value: bool) :
-        self._distillated = value
         if value:
+            self._distillated = True
             self.distillation_actual = datetime.datetime.now().date()
         else:
+            self._distillated = False
             self.distillation_actual = None
 
     def set_id(self, id_):
