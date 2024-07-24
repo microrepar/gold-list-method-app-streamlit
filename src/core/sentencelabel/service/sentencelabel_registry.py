@@ -36,12 +36,11 @@ class SentenceLabelRegistryService(UseCase):
             
         try:
             new_sentencelabel: SentenceLabel = self.repository.registry(entity)
-
             result.entities = new_sentencelabel
 
         except Exception as error:
-            error_msg = ('SentenceLabelRegistryService error: '
-                         f'- {str(error)}')
+            error_msg = ('SentenceLabelRegistryService error: An error occurred while '
+                         f'registering the SentenceLabel ->>> {str(error)}')
             result.error_msg = error_msg
             return result
 

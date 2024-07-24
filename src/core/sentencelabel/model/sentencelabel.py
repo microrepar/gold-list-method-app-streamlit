@@ -57,9 +57,12 @@ class SentenceLabel(Entity):
 
     def to_dict(self):
         sentencetranslation_id = None
-        pagesection_id = None
+        sentencetranslation_dict = None
         if self.sentencetranslation:
             sentencetranslation_id = self.sentencetranslation.id
+            sentencetranslation_dict = self.sentencetranslation.to_dict()
+
+        pagesection_id = None
         if self.pagesection:
             pagesection_id = self.pagesection.id
         return {
@@ -67,6 +70,7 @@ class SentenceLabel(Entity):
             'created_at'             : date_to_string(self.created_at),
             'updated_at'             : date_to_string(self.updated_at),
             'sentencetranslation_id' : sentencetranslation_id,
+            'sentencetranslation'    : sentencetranslation_dict,
             'pagesection_id'         : pagesection_id,
             'translation'            : self.translation,
             'memorialized'           : self.memorialized,

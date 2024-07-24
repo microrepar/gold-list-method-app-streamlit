@@ -1,3 +1,4 @@
+import contextlib
 from uuid import uuid4
 from src.core import usecase_map
 from src.core.shared.application import Result
@@ -17,10 +18,12 @@ class SentenceTranslationRegistryService(UseCase):
         result = Result()
         sentencetranslation = entity.clone()
         
-        try:
+        new_sentencetranslation = None
+        with contextlib.suppress(Exception):
             new_sentencetranslation = self.repository.registry(sentencetranslation)
             result.entities = new_sentencetranslation
-        except Exception as error:
+
+        if not new_sentencetranslation:
             sentencetranslation_filter = SentenceTranslation(foreign_language=entity.foreign_language)
             has_sentencetranslations = self.repository.find_by_field(sentencetranslation_filter)
             if not has_sentencetranslations:
