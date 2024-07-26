@@ -91,7 +91,7 @@ if st.session_state.get('username'):
         
         if non_msg and selected_pagesection_day:
             placeholder_container_msg.info(
-                f"⚠️There is already a page for the group "
+                f"ℹ️  There is already a page for the group "
                 f"{selected_pagesection_day.group.value} "
                 f"and selected day ({selected_pagesection_day.created_at})."
             )
@@ -171,6 +171,9 @@ if st.session_state.get('username'):
             ),
         }
 
+        if 'retry_df_result' in st.session_state:
+            df_edit = st.session_state.get('retry_df_result')
+
         st.markdown("**Add new HeadList**")
 
         df_result = st.data_editor(
@@ -185,19 +188,22 @@ if st.session_state.get('username'):
         placehold_btn_insert = st.empty()
         placehold_page_exists = st.empty()
 
-        df_result["foreign_idiom"] = notebook.foreign_idiom
-        df_result["mother_idiom"] = notebook.mother_idiom
-        df_result["created_at"] = selected_day
-
-        if placehold_btn_insert.button(
-            "INSERT NEW LIST",
-            type="primary",
+        submited =  placehold_btn_insert.button(
+            "INSERT NEW LIST", type="primary", use_container_width=True,
             disabled=False if selected_pagesection_day is None else True,
-            use_container_width=True,
-        ):
+        )
+
+        if submited:
+            if 'retry_df_result' in st.session_state:
+                df_edit = st.session_state.pop('retry_df_result')
+
+            df_copy = df_result.copy().reset_index(drop=True)
+            df_copy["foreign_idiom"] = notebook.foreign_idiom
+            df_copy["mother_idiom"] = notebook.mother_idiom
+            df_copy["created_at"] = selected_day
 
             sentencelabel_dict_list = []
-            for sentencetranslation_dict in list(df_result.T.to_dict().values()):
+            for sentencetranslation_dict in list(df_copy.T.to_dict().values()):
                 label_dict = {
                     'sentencelabel_sentencetranslation': {
                         "sentencetranslation_foreign_language": sentencetranslation_dict["foreign_language"],
@@ -226,8 +232,11 @@ if st.session_state.get('username'):
             ###############################################################
             # FeedBack
             if "error" in messages:
+                if 'retry_df_result' not in st.session_state:
+                    st.session_state.retry_df_result = df_result
                 for msg in messages["error"]:
-                     st.session_state['flag_error_msg'] = "\n  - ".join(messages["error"])
+                    st.session_state['flag_error_msg'] = "\n  - ".join(messages["error"])
+                
             elif entities:
                 notebook.pagesection_list.extend(entities)
                 st.session_state['flag_success_msg'] = f"{entities[-1]} was inserted successfully!\n"
