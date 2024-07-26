@@ -31,8 +31,7 @@ class ApiSentenceLabelRepository(SentenceLabelRepository):
         sentencelabel_dict.pop('updated_at')
         sentencelabel_dict.pop('created_at')
 
-        self.querystring.update(sentencelabel_dict)
-        response = requests.post(url, headers=self.headers, json=self.querystring)
+        response = requests.post(url, headers=self.headers, json=sentencelabel_dict)
         response.raise_for_status()
         response_json = response.json()
 
@@ -56,8 +55,7 @@ class ApiSentenceLabelRepository(SentenceLabelRepository):
         sentencelabel_dict.pop('pagesection_id')
         sentencelabel_dict = {k: v for k, v in sentencelabel_dict.items() if v is not None}
 
-        self.querystring.update(sentencelabel_dict)
-        response = requests.put(url, headers=self.headers, json=self.querystring)
+        response = requests.put(url, headers=self.headers, json=sentencelabel_dict)
         response.raise_for_status()
         response_json = response.json()
 
@@ -96,8 +94,7 @@ class ApiSentenceLabelRepository(SentenceLabelRepository):
                 )
             kwargs[attr] = value
         
-        self.querystring.update(kwargs)
-        response = requests.post(url, headers=self.headers, json=self.querystring)
+        response = requests.post(url, headers=self.headers, json=kwargs)
         response.raise_for_status()
         response_json = response.json()
 

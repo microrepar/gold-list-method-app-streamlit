@@ -46,10 +46,11 @@ class ApiUserRepository(UserRepository):
         return user_list
 
     def update(self, entity: User) -> User:
-        url = self.url + f'{entity.id}'        
-        self.querystring['name']            = entity.name
-        self.querystring['email']           = entity.email
-        response = requests.put(url, headers=self.headers, json=self.querystring)
+        url = self.url + f'{entity.id}'
+        kwargs = {}        
+        kwargs['name']            = entity.name
+        kwargs['email']           = entity.email
+        response = requests.put(url, headers=self.headers, json=kwargs)
         response.raise_for_status()
         user_dict = response.json()
         user = User(
@@ -79,8 +80,7 @@ class ApiUserRepository(UserRepository):
                 raise Exception(f'This field "{attr}" cannot be used to find Users!')            
             kwargs[attr] = value
 
-        self.querystring.update(kwargs)
-        response = requests.post(url, json=self.querystring)
+        response = requests.post(url, json=kwargs)
         response.raise_for_status()
         response_json = response.json()
         user_list = []

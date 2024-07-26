@@ -40,6 +40,11 @@ class PageSectionRepository(Repository, Protocol):
         """
     
     @abstractmethod
+    def find_by_field_clean(self, entity: PageSection) -> List[Optional[PageSection]]:
+        """Get by id a registred PageSection in database
+        """
+    
+    @abstractmethod
     def get_last_page_number(self, entity: PageSection) -> int:
         """Get next page number to PageSection
         """

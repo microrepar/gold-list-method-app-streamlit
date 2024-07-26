@@ -87,8 +87,8 @@ class ApiNotebookRepository(NotebookRepository):
             else:
                 raise Exception(f'This field "{attr}" cannot be used to find Notebook objects!')
             kwargs[attr] = value
-        self.querystring.update(kwargs)
-        response = requests.post(url, json=self.querystring)
+        
+        response = requests.post(url, json=kwargs)
         response.raise_for_status()
         response_json = response.json()
         notebook_list = []
@@ -143,8 +143,7 @@ class ApiNotebookRepository(NotebookRepository):
             else:
                 raise Exception(f'This field "{attr}" cannot be used to find Notebook objects!')
             kwargs[attr] = value
-        self.querystring.update(kwargs)
-        response = requests.post(url, json=self.querystring)
+        response = requests.post(url, json=kwargs)
         response.raise_for_status()
         response_json = response.json()
         notebook_list = []
@@ -199,8 +198,7 @@ class ApiNotebookRepository(NotebookRepository):
             else:
                 raise Exception(f'This field "{attr}" cannot be used to find Notebook objects!')
             kwargs[attr] = value
-        self.querystring.update(kwargs)
-        response = requests.post(url, json=self.querystring)
+        response = requests.post(url, json=kwargs)
         response.raise_for_status()
         response_json = response.json()
         notebook_list = []

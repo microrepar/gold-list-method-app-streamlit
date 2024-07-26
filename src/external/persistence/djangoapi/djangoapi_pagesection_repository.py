@@ -33,8 +33,7 @@ class ApiPageSectionRepository(PageSectionRepository):
         pagesection_dict.pop('updated_at')
         pagesection_dict = {k: v for k, v in pagesection_dict.items() if v is not None}
 
-        self.querystring.update(pagesection_dict)
-        response = requests.post(url, headers=self.headers, json=self.querystring)
+        response = requests.post(url, headers=self.headers, json=pagesection_dict)
         response.raise_for_status()
         response_json = response.json()
         
@@ -156,8 +155,7 @@ class ApiPageSectionRepository(PageSectionRepository):
         pagesection_dict.pop('notebook_id')        
         pagesection_dict = {k: v for k, v in pagesection_dict.items() if v}
 
-        self.querystring.update(pagesection_dict)
-        response = requests.put(url, headers=self.headers, json=self.querystring)
+        response = requests.put(url, headers=self.headers, json=pagesection_dict)
         response.raise_for_status()
         response_json = response.json()
         
@@ -215,14 +213,12 @@ class ApiPageSectionRepository(PageSectionRepository):
                 )
             kwargs[attr] = value
         
-        self.querystring.update(kwargs)
-        response = requests.post(url, headers=self.headers, json=self.querystring)
+        response = requests.post(url, headers=self.headers, json=kwargs)
         response.raise_for_status()
         response_json = response.json()
 
         pagesection_list = []
         for pagesection_dict in response_json:
-
             pagesection = PageSection(
                 id_=pagesection_dict.get('id'),
                 created_at=string_to_date(pagesection_dict.get('created_at')),
@@ -243,6 +239,9 @@ class ApiPageSectionRepository(PageSectionRepository):
             pagesection_list.append(pagesection)
             
         return pagesection_list
+    
+    def find_by_field_clean(self, entity: PageSection) -> List[PageSection]:
+        return []
     
     def find_by_field_depth(self, entity: PageSection) -> List[PageSection]:
         url = self.url + f'find_by_field/depth/'
@@ -277,8 +276,7 @@ class ApiPageSectionRepository(PageSectionRepository):
                 )
             kwargs[attr] = value
         
-        self.querystring.update(kwargs)
-        response = requests.post(url, headers=self.headers, json=self.querystring)
+        response = requests.post(url, headers=self.headers, json=kwargs)
         response.raise_for_status()
         response_json = response.json()
 
