@@ -123,7 +123,6 @@ if st.session_state.get('username'):
             else:
                 return "🟧"
 
-
         choiced_group = st.sidebar.radio('SELECT GROUP:', 
             (
                 f'GROUP A - {get_btn_label(pagesection_a)}',
@@ -335,8 +334,8 @@ if st.session_state.get('username'):
                     if 'warning' in messages:
                         placeholder_container_msg.warning('\n  - '.join(messages['warning']), icon='ℹ️')
                     if 'success' in messages:
+                        messages['success'].append(f'{pagesection_after_group} was distilled successfully!')
                         placeholder_container_msg.success('\n  - '.join(messages['success']), icon='✅')
-                        placeholder_container_msg.success(f'{pagesection_after_group} was distilled successfully!')
                         st.toast('Page section was distilleted successfully.')
                     
         else:
