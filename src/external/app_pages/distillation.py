@@ -9,12 +9,6 @@ from src.core.notebook import Notebook
 from src.core.pagesection import Group, PageSection
 from src.core.user import User
 
-st.set_page_config(layout='wide')
-
-placeholder_container_msg = st.container()
-controller = Controller()
-
-add_page_title(layout="wide")  # Optional method to add title and icon to current page
 
 def get_group_dataframe(pagesection):
     sentencelabels = None
@@ -40,7 +34,13 @@ def get_group_dataframe(pagesection):
         df['translated_sentences'] = ''
         df['remembered'] = False
     return df
+st.set_page_config(layout='wide')
 
+
+placeholder_container_msg = st.container()
+controller = Controller()
+
+add_page_title(layout="wide")  # Optional method to add title and icon to current page
 
 if st.session_state.get('username'):
     username = st.session_state['username']
@@ -144,7 +144,25 @@ if st.session_state.get('username'):
         placeholder_subheader_empty = st.empty()
         placeholder_subheader_empty.subheader(f'{notebook.name.upper()} NOTEBOOK - {choiced_group}')
 
-        ##########################Group Section####################################
+        ########################################################################
+        if st.session_state.get('flag_success_msg'):
+            msg_success = st.session_state.pop('flag_success_msg')
+            placeholder_container_msg.success(msg_success)
+            st.toast('Action executed successfully.')
+
+        if st.session_state.get('flag_info_msg'):
+            info_msg = st.session_state.pop('flag_info_msg')
+            placeholder_container_msg.info(info_msg)
+            
+        if st.session_state.get('flag_warning_msg'):
+            warning_msg = st.session_state.pop('flag_warning_msg')
+            placeholder_container_msg.warning(warning_msg)
+
+        if st.session_state.get('flag_error_msg'):
+            error_msg = st.session_state.pop('flag_error_msg')
+            placeholder_container_msg.error(error_msg)
+            st.toast("Something went wrong!")
+        ########################################################################
         if not dataframe.empty:
             column_configuration = {
                 "foreign_language": st.column_config.TextColumn(
@@ -178,8 +196,7 @@ if st.session_state.get('username'):
             col1, col2, col3, col4 = st.columns(4)
             
             placeholder_form = st.empty()
-            form = placeholder_form.form('distill_form', border=False)
-            
+            form = placeholder_form.form('distill_form', clear_on_submit=True, border=False)
 
             with col1:
                 read_aloud = st.checkbox('Read aloud', value=True, 
@@ -203,28 +220,37 @@ if st.session_state.get('username'):
                 df_distilled = form.data_editor(
                     dataframe[['foreign_language']], column_config=column_configuration, num_rows="fixed",
                     hide_index=True, use_container_width=True, disabled=['foreign_language', 'mother_tongue'],
-                    key='data_editor'
+                    key='form_data_editor'
                 )
                     
             elif translate and not distill:
+                if 'retry_df_update' in st.session_state:
+                    dataframe = st.session_state.get('retry_df_update')
+
                 df_distilled = form.data_editor(
                     dataframe[['foreign_language', 'translated_sentences']], column_config=column_configuration,
-                    use_container_width=True, hide_index=True, num_rows="fixed", key='data_editor',
+                    use_container_width=True, hide_index=True, num_rows="fixed", key='form_data_editor',
                     disabled=['foreign_language'] if not pagesection_group.distillated else ['translated_sentences', 'foreign_language'],
                 )
                 btn_update = form.form_submit_button('RECORD TRANSLATION', use_container_width=True, type='primary')
             
-            elif distill and not pagesection_group.distillated:                
+            elif distill and not pagesection_group.distillated:
+                if 'retry_df_distilled' in st.session_state:
+                    dataframe = st.session_state.get('retry_df_distilled')
+
                 df_distilled = form.data_editor(
                     dataframe[distilled_columns], column_config=column_configuration, 
-                    use_container_width=True, hide_index=True, num_rows="fixed", key='data_editor',
+                    use_container_width=True, hide_index=True, num_rows="fixed", key='form_data_editor',
                     disabled=['foreign_language', 'mother_tongue', 'translated_sentences'] if not pagesection_group.distillated else distilled_columns,
                 )
 
             elif pagesection_group.distillated:
                 df_distilled = form.dataframe(dataframe[distilled_columns].rename(columns=rename_columns),use_container_width=True, hide_index=True)
             
-            if btn_update:                
+            if btn_update:
+                if 'retry_df_update' in st.session_state:
+                    st.session_state.pop('retry_df_update')
+
                 df_update = df_distilled.copy().reset_index(drop=True)
                 df_update['remembered'] = False
                 df_update['foreign_idiom'] = notebook.foreign_idiom
@@ -241,41 +267,47 @@ if st.session_state.get('username'):
                 # UPDATE PAGESECTION - BODY REQUEST
                 ###############################################################
                 request = {
-                    'resource': '/pagesection/update',
+                    'resource': '/pagesection/update_depth',
                     'pagesection_id_': pagesection_group.id,
                     'pagesection_sentencelabels': [sl.to_dict_with_prefix() for sl in sentencelabel_updated_list],            
                 }
-                ####################
+                ###############################################################
                 # FrontController
-                ####################
+                ###############################################################
                 resp = controller(request=request)
                 messages = resp.get('messages')
                 entities = resp.get('entities')
-                ####################
+                ###############################################################
                 # Feadback
-                ####################
+                ###############################################################
                 if 'error' in messages:
+                    st.session_state.retry_df_update = df_update
                     for msg in messages['error']:
-                        placeholder_container_msg.error(msg,  icon="🚨")
-                    st.toast('Something went wrong!')
+                        st.session_state['flag_error_msg'] = "\n  - ".join(messages["error"])
+                
                 elif entities:
                     pagesection_group = entities[-1]
-                    placeholder_container_msg.empty()
-                ###############################################################
+                    
                 if 'info' in messages:
-                    placeholder_container_msg.info('\n  - '.join(messages['info']), icon='⚠️')
+                    st.session_state['flag_info_msg'] = "\n  - ".join(messages["info"])
+
                 if 'warning' in messages:
-                    placeholder_container_msg.warning('\n  - '.join(messages['warning']), icon='ℹ️')
+                    st.session_state['flag_warning_msg'] = "\n  - ".join(messages["warning"])
+
                 if 'success' in messages:
-                    placeholder_container_msg.success(f'{entities[-1]} was updated successfully!')
-                    st.toast('Page section was updated successfully.')
+                    st.session_state['flag_success_msg'] = "\n  - ".join(messages["success"])                    
                 ###############################################################
+                ###############################################################
+
+                st.rerun()
 
             if distill:
                 placeholder_distill_button = st.empty()
 
                 if form.form_submit_button('HEADLIST DISTILLATION FINISH', use_container_width=True, type='primary', 
                                            disabled=True if pagesection_group.distillated else False):
+                    if 'retry_df_distilled' in st.session_state:
+                        st.session_state.pop('retry_df_distilled')
                     
                     df_distilled = df_distilled.reset_index(drop=True)
                     df_distilled['foreign_idiom'] = notebook.foreign_idiom
@@ -313,31 +345,27 @@ if st.session_state.get('username'):
                     # FeedBack
                     ############################################################
                     if 'error' in messages:
-                        st.toast('Something went wrong!')
-                        for msg in messages['error']:
-                            placeholder_container_msg.error(msg,  icon="🚨")
+                        st.session_state['retry_df_distilled'] = df_distilled
+                        st.session_state['flag_error_msg'] = "\n  - ".join(messages["error"])
                     
                     elif entities:
                         pagesection_after_group = entities[-1]
-                        choiced_group = f'{choiced_group.split(" - ")[0]} - {get_btn_label(pagesection_after_group)}'
-                        placeholder_subheader_empty.subheader(f'{notebook.name.upper()} NOTEBOOK - {choiced_group}')
                         notebook.pagesection_list.append(pagesection_after_group)
-                        
-                        form = placeholder_form.form('has_destilled', border=False)
-                        form.dataframe(dataframe[distilled_columns].rename(columns=rename_columns), use_container_width=True, hide_index=True)
-                        form.form_submit_button('DISTILLATION FINISH', use_container_width=True, type='primary', disabled=True)
-                        
-                        placeholder_checkbox_distill.checkbox('Distill', value=True, disabled=True, key='cbox_distillated')
 
                     if 'info' in messages:
-                        placeholder_container_msg.info('\n  - '.join(messages['info']), icon='⚠️')
+                        st.session_state['flag_info_msg'] = "\n  - ".join(messages["info"])
+
                     if 'warning' in messages:
-                        placeholder_container_msg.warning('\n  - '.join(messages['warning']), icon='ℹ️')
+                        st.session_state['flag_warning_msg'] = "\n  - ".join(messages["warning"])
+
                     if 'success' in messages:
                         messages['success'].append(f'{pagesection_after_group} was distilled successfully!')
-                        placeholder_container_msg.success('\n  - '.join(messages['success']), icon='✅')
-                        st.toast('Page section was distilleted successfully.')
-                    
+                        st.session_state['flag_success_msg'] = "\n  - ".join(messages["success"])
+                    ############################################################
+                    ############################################################
+
+                    st.rerun()
+
         else:
             st.warning('⚠️There is no a list of expressions '
                         'in "Group A" to distill on the selected day!')

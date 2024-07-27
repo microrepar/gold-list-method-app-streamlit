@@ -96,8 +96,7 @@ if st.session_state.get('username'):
                 f"and selected day ({selected_pagesection_day.created_at})."
             )
 
-
-        if non_msg and selected_pagesection_day is None:        
+        if non_msg and selected_pagesection_day is None and 'retry_df_result' not in st.session_state:
             #############################################################
             ### FIND SENTENCES BY NP GROUP
             #############################################################
@@ -176,26 +175,26 @@ if st.session_state.get('username'):
 
         st.markdown("**Add new HeadList**")
 
-        df_result = st.data_editor(
-            df_edit,
-            column_config=column_configuration_data,
-            num_rows="fixed",
-            hide_index=True,
-            use_container_width=True,
-            disabled=False if selected_pagesection_day is None else True,
-        )
-        
-        placehold_btn_insert = st.empty()
-        placehold_page_exists = st.empty()
+        with st.form('healist_form', clear_on_submit=True, border=False):
+            df_result = st.data_editor(
+                df_edit,
+                column_config=column_configuration_data,
+                num_rows="fixed",
+                hide_index=True,
+                use_container_width=True,
+                disabled=False if selected_pagesection_day is None else True,
+            )
+            
+            placehold_btn_insert = st.empty()
 
-        submited =  placehold_btn_insert.button(
-            "INSERT NEW LIST", type="primary", use_container_width=True,
-            disabled=False if selected_pagesection_day is None else True,
-        )
+            submited =  placehold_btn_insert.form_submit_button(
+                "INSERT NEW LIST", type="primary", use_container_width=True,
+                disabled=False if selected_pagesection_day is None else True
+            )
 
         if submited:
             if 'retry_df_result' in st.session_state:
-                df_edit = st.session_state.pop('retry_df_result')
+                st.session_state.pop('retry_df_result')
 
             df_copy = df_result.copy().reset_index(drop=True)
             df_copy["foreign_idiom"] = notebook.foreign_idiom
@@ -232,10 +231,8 @@ if st.session_state.get('username'):
             ###############################################################
             # FeedBack
             if "error" in messages:
-                if 'retry_df_result' not in st.session_state:
-                    st.session_state.retry_df_result = df_result
-                for msg in messages["error"]:
-                    st.session_state['flag_error_msg'] = "\n  - ".join(messages["error"])
+                st.session_state.retry_df_result = df_result                
+                st.session_state['flag_error_msg'] = "\n  - ".join(messages["error"])
                 
             elif entities:
                 notebook.pagesection_list.extend(entities)
@@ -253,8 +250,7 @@ if st.session_state.get('username'):
             if "warning" in messages:
                 st.session_state['flag_warning_msg'] = "\n  - ".join(messages["warning"])
             ###############################################################
-            ###############################################################
-            
+            ###############################################################            
             st.rerun()
 
         qty_group_a = notebook.count_pagesection_by_group(group=Group.A)
