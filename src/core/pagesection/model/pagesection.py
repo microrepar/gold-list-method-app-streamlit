@@ -201,12 +201,12 @@ class PageSection(Entity):
             'id'                  : self.id,
             'created_at'          : date_to_string(self.created_at),
             'updated_at'          : date_to_string(self.updated_at),
-            'notebook_id'         : notebook_id,
             'page_number'         : self.page_number,
             'group'               : group_value,
             'distillated'         : self._distillated,
             'distillation_at'     : date_to_string(self.distillation_at),
             'distillation_actual' : date_to_string(self.distillation_actual),
+            'notebook_id'         : notebook_id,
             'created_by_id'       : created_by_id,
         }
     

@@ -3,9 +3,12 @@
 import streamlit as st
 from st_pages import add_page_title
 
-from src.external.app_pages.auth_manager.authentication import streamlit_auth
+from src.core.user import User
 
 st.set_page_config(layout='wide')
+add_page_title(layout='wide')
+
+placeholder_msg = st.empty()
 
 
 def on_click_btn_pages(*args, **kwargs):
@@ -20,36 +23,27 @@ def on_click_btn_pages(*args, **kwargs):
         st.session_state.btn_reset_password_page = False
         st.session_state.btn_signup_page = False
 
-# ----- LOGIN MAIN ------
-placeholder_msg = st.empty()
 
-name, authentication_status, username, authenticator, credentials, user_dict = streamlit_auth(placeholder_msg)
+if st.session_state.get('username'):
+    username = st.session_state['username']
+    credentials = st.session_state['credentials']
+    user: User = credentials['usernames'][username]['user']    
+    authenticator = st.session_state.authenticator
 
-add_page_title(layout='wide')
-
-
-if 'btn_signup_page' not in st.session_state:
-    if username == 'admin':
-        st.session_state.btn_signup_page = True
-    else:
-        st.session_state.btn_signup_page = False
-
-if 'btn_reset_password_page' not in st.session_state:
-    if username == 'admin':
-        st.session_state.btn_reset_password_page = False
-    else:
-        st.session_state.btn_reset_password_page = True
-
-# Check login
-if authentication_status == False:
-    st.error("Username/password is incorrect")
-
-if authentication_status == None:
-    st.warning("Please enter your username and password to access application")
-
-if authentication_status:    
     # ---- LOGOUT SIDEBAR ----
     authenticator.logout(f"Logout | {st.session_state.username}", "sidebar")
+
+    if 'btn_signup_page' not in st.session_state:
+        if username == 'admin':
+            st.session_state.btn_signup_page = True
+        else:
+            st.session_state.btn_signup_page = False
+
+    if 'btn_reset_password_page' not in st.session_state:
+        if username == 'admin':
+            st.session_state.btn_reset_password_page = False
+        else:
+            st.session_state.btn_reset_password_page = True
 
     # ----------Sidebar Buttons----------
     if username == 'admin':        
@@ -76,10 +70,13 @@ if authentication_status:
         signup_page(authenticator, credentials, username)
 
     if st.session_state.btn_reset_password_page:
-        from src.external.app_pages.auth_manager.reset_password \
-            import reset_password_page
+        from src.external.app_pages.auth_manager.reset_password import \
+            reset_password_page
         reset_password_page(authenticator, credentials, username, placeholder_msg)
-else:    
-    st.session_state.pop('btn_signup_page')
-    st.session_state.pop('btn_reset_password_page')
+else:
+    if 'btn_signup_page' in st.session_state:
+        st.session_state.pop('btn_signup_page')
+
+    if 'btn_reset_password_page' in st.session_state:
+        st.session_state.pop('btn_reset_password_page')
         

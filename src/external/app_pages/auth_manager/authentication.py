@@ -76,7 +76,7 @@ def streamlit_auth(placeholder_msg):
                 [   Page("streamlit_app.py", "HOME", "🪙"),
                     Page("src/external/app_pages/calendar.py", "Calendar", "🗓️"),
                     # Page("src/external/app_pages/maps.py", "Folium", "🗺️"),
-                    Page("src/external/app_pages/headlist.py", "HeadList", "📃"),
+                    Page("src/external/app_pages/headlist.py", "Add HeadList", "📃"),
                     Page("src/external/app_pages/distillation.py", "Distillation", "🧠"),
                     # Section(name="Notebooks", icon=":books:"),
                     # Section(name="NOTEBOOKS"),
@@ -94,7 +94,7 @@ def streamlit_auth(placeholder_msg):
                     Page("src/external/app_pages/calendar.py", "Calendar", "🗓️"),
                     # Section(name="Notebooks", icon=":books:"),
                     # # Can use :<icon-name>: or the actual icon 
-                    Page("src/external/app_pages/headlist.py", "HeadList", "📃"),
+                    Page("src/external/app_pages/headlist.py", "Add HeadList", "📃"),
                     Page("src/external/app_pages/distillation.py", "Distillation", "🧠"),
                     # Page("src/external/app_pages/notebook.py", "Notebook", "📖"),
                 ]

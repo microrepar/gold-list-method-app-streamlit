@@ -173,6 +173,94 @@ class ApiPageSectionRepository(PageSectionRepository):
             sentencelabels=entity.sentencelabels
         )
         return pagesection
+    
+    def update_depth(self, entity: PageSection) -> PageSection:
+        url = self.url + f'depth/{entity.id}'
+        pagesection_dict = entity.to_dict()
+        pagesection_dict.pop('id')
+        pagesection_dict.pop('created_at')
+        pagesection_dict.pop('updated_at')
+        pagesection_dict['sentencelabels'] = [sl.to_dict() for sl in entity.sentencelabels]
+        for sl_dict in pagesection_dict['sentencelabels']:
+            sl_dict.pop('created_at')
+            sl_dict.pop('updated_at')
+            sl_dict = {k: v for k, v in sl_dict.items() if v}
+        pagesection_dict = {k: v for k, v in pagesection_dict.items() if v}
+
+        response = requests.put(url, headers=self.headers, json=pagesection_dict)
+        response.raise_for_status()
+        pagesection_dict = response.json()
+        
+        sl_list = []
+        for sentencelabel_dict in pagesection_dict.get('sentencelabels'):
+            sentencelabel = SentenceLabel(
+                id_=sentencelabel_dict.get('id'),
+                created_at=string_to_date(sentencelabel_dict.get('created_at')),
+                updated_at=string_to_date(sentencelabel_dict.get('updated_at')),
+                pagesection=PageSection(
+                    id_=pagesection_dict.get('id'),
+                    created_at=string_to_date(pagesection_dict.get('created_at')),
+                    page_number=pagesection_dict.get('page_number'),
+                    group=Group[pagesection_dict.get('group')],
+                    distillation_at=string_to_date(pagesection_dict.get('distillation_at')),
+                    distillated=pagesection_dict.get('distillated'),
+                    distillation_actual=pagesection_dict.get('distillation_actual')
+                ),
+                translation=sentencelabel_dict.get('translation'),
+                memorialized=sentencelabel_dict.get('memorialized')
+            )
+            sentencetranslation_dict = sentencelabel_dict.get('sentencetranslation')
+            sentencetranslation = SentenceTranslation(
+                id_=sentencetranslation_dict.get('id'),
+                created_at=string_to_date(sentencetranslation_dict.get('created_at')),
+                updated_at=string_to_date(sentencetranslation_dict.get('updated_at')),
+                foreign_language=sentencetranslation_dict.get('foreign_language_sentence'),
+                mother_tongue=sentencetranslation_dict.get('mother_language_sentence'),
+                foreign_idiom=sentencetranslation_dict.get('foreign_language_idiom'),
+                mother_idiom=sentencetranslation_dict.get('mother_language_idiom')
+            )
+            sentencelabel.sentencetranslation = sentencetranslation
+            sl_list.append(sentencelabel)
+
+        notebook_dict = pagesection_dict.get('notebook')
+        notebook = Notebook(
+            id_=notebook_dict.get('id'),
+            name=notebook_dict.get('name'),
+            created_at=string_to_date(notebook_dict.get('created_at')),
+            updated_at=string_to_date(notebook_dict.get('updated_at')),
+            sentence_list_size=[],
+            days_period=notebook_dict.get('days_period'),
+            foreign_idiom=notebook_dict.get('foreign_idiom'),
+            mother_idiom=notebook_dict.get('mother_idiom'),
+        )
+
+        created_by = None
+        created_by_dict = pagesection_dict.get('created_by')
+        if created_by_dict:
+            created_by = PageSection(
+                id_=created_by_dict.get('id'),
+                created_at=string_to_date(created_by_dict.get('created_at')),
+                sentencelabels=[],
+                page_number=created_by_dict.get('page_number'),
+                group=Group[created_by_dict.get('group')],
+                distillation_at=string_to_date(created_by_dict.get('distillation_at')),
+                distillated=created_by_dict.get('distillated'),
+                distillation_actual=created_by_dict.get('distillation_actual')
+            )
+
+        pagesection = PageSection(
+            id_=pagesection_dict.get('id'),
+            created_at=string_to_date(pagesection_dict.get('created_at')),
+            created_by=created_by,
+            notebook=notebook,
+            sentencelabels=sl_list,
+            page_number=pagesection_dict.get('page_number'),
+            group=Group[pagesection_dict.get('group')],
+            distillation_at=string_to_date(pagesection_dict.get('distillation_at')),
+            distillated=pagesection_dict.get('distillated'),
+            distillation_actual=pagesection_dict.get('distillation_actual')
+        )
+        return pagesection
 
     def get_all(self) -> List[PageSection]:
         return []
@@ -387,7 +475,3 @@ class ApiPageSectionRepository(PageSectionRepository):
         response.raise_for_status()
         success = response.json().get('success')
         return success
-
-    def update_sentencelabel(self, entity: PageSection):
-        pass
-        

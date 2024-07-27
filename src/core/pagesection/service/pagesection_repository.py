@@ -50,7 +50,7 @@ class PageSectionRepository(Repository, Protocol):
         """
     
     @abstractmethod
-    def get_sentences_by_group(self, entity: 'SentenceTranslation') -> List['SentenceTranslation']:
+    def get_sentences_by_group(self, entity: PageSection) -> List['SentenceTranslation']: # type: ignore
         """Get sentences by group
         """
     
@@ -60,8 +60,8 @@ class PageSectionRepository(Repository, Protocol):
         """
     
     @abstractmethod
-    def update_sentencelabel(self, entity: PageSection) -> PageSection:
-        """Update associated sentencelabel into table in database
+    def update_depth(self, entity: PageSection) -> PageSection:
+        """Update depth page number in database
         """
     
     @abstractmethod
