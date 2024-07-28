@@ -324,7 +324,7 @@ if st.session_state.get('username'):
                     # DISTILLATION PAGESECTION - BODY REQUEST
                     ###############################################################
                     request = {
-                        'resource': '/pagesection/distillation',
+                        'resource': '/pagesection/distillation/depth',
                         'pagesection_notebook': notebook.to_dict_with_prefix(),
                         'pagesection_id_': pagesection_group.id,
                         'pagesection_page_number': pagesection_group.page_number,
