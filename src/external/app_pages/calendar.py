@@ -10,6 +10,13 @@ from src.adapters import Controller
 from src.core.notebook import Notebook
 from src.core.user import User
 
+
+def on_change_notebook():
+    st.session_state.flag_alter_calendar = not st.session_state.flag_alter_calendar
+    st.session_state.pop('distillation_event')
+    st.session_state.pop('notebook_list')
+
+
 st.set_page_config(layout='wide')
 add_page_title(layout="wide")  # Optional method to add title and icon to current page
 
@@ -21,35 +28,35 @@ if st.session_state.get('username'):
     user: User = st.session_state['credentials']['usernames'][username]['user']    
 
     controller = Controller()
-    #############################################################
-    # REQUEST NOTEBOOK FIND BY FIELD DEPTH
-    #############################################################
-    request = {
-        'resource': '/notebook/find_by_field_depth',
-        'notebook_user': {'user_id_': user.id},
-    }
-    resp = controller(request=request)
-    messages = resp['messages']
-    entities = resp['entities']
-    notebook_list = entities
-    # RESPONSE MESSAGES##########################################        
-    if 'error' in messages:
-        for msg in messages['error']:
-            placehold_container_msg.error(msg, icon='🚨')
-    if 'info' in messages:
-        placehold_container_msg.info('\n  - '.join(messages['info']), icon='⚠️')
-    if 'warning' in messages:
-        placehold_container_msg.warning('\n  - '.join(messages['warning']), icon='ℹ️')
-    if 'success' in messages:
-        placehold_container_msg.success('\n  - '.join(messages['success']), icon='✅')
-    #############################################################
-    #############################################################
+    if 'notebook_list' not in st.session_state:
+        #############################################################
+        # REQUEST NOTEBOOK FIND BY FIELD DEPTH
+        #############################################################
+        request = {
+            'resource': '/notebook/find_by_field_depth',
+            'notebook_user': {'user_id_': user.id},
+        }
+        resp = controller(request=request)
+        messages = resp['messages']
+        entities = resp['entities']
+        st.session_state.notebook_list = entities
+        # RESPONSE MESSAGES##########################################        
+        if 'error' in messages:
+            for msg in messages['error']:
+                placehold_container_msg.error(msg, icon='🚨')
+        if 'info' in messages:
+            placehold_container_msg.info('\n  - '.join(messages['info']), icon='⚠️')
+        if 'warning' in messages:
+            placehold_container_msg.warning('\n  - '.join(messages['warning']), icon='ℹ️')
+        if 'success' in messages:
+            placehold_container_msg.success('\n  - '.join(messages['success']), icon='✅')
+        #############################################################
+        #############################################################
+
+    notebook_list = st.session_state.notebook_list
 
     if 'flag_alter_calendar' not in st.session_state:
         st.session_state.flag_alter_calendar = True    
-
-    def on_change_notebook():
-        st.session_state.flag_alter_calendar = not st.session_state.flag_alter_calendar
 
     notebook_dict = {n.name: n for n in notebook_list}
     if len(notebook_list) > 0:
@@ -59,9 +66,11 @@ if st.session_state.get('username'):
                                                 key='select_notebook')
 
         notebook: Notebook = notebook_dict.get(selected_notebook)
+        
+        if 'distillation_event' not in st.session_state:
+            st.session_state.distillation_event = [ps.get_distillation_event() for ps in notebook.pagesection_list]
 
         st.subheader(f'{notebook.name.upper()} CALENDAR')
-
         col_group_1, col_group_2, col_group_3, col_group_4 = st.sidebar.columns(4)
 
         calendar_resources = [
@@ -91,14 +100,14 @@ if st.session_state.get('username'):
         mode = 'daygrid'
 
         if st.session_state.flag_alter_calendar:
-            events = [ps.get_distillation_event() for ps in notebook.pagesection_list]
+            events = st.session_state.distillation_event
             state = calendar(
                 events=events,
                 options=calendar_options,
                 key=mode+'1',
             )
         else:
-            events = [ps.get_distillation_event() for ps in notebook.pagesection_list]
+            events = st.session_state.distillation_event
             state = calendar(
                 events=events,
                 options=calendar_options,
