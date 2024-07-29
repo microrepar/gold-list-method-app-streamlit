@@ -247,12 +247,12 @@ class PageSection(Entity):
                 
         for k, v in repeated_counter.items():
             if v > 1:
-                messages.append(f'This sentence="{k}" is repeated into Headlist')
+                messages.append(f'This sentence="{k}" is repeated in this Headlist')
         
         if messages:
             return messages
 
     def set_distillation_at(self):
-        self.distillation_at = (self.created_at + datetime.timedelta(days=self.notebook.days_period))
+        self.distillation_at = (self.created_at + datetime.timedelta(days=(self.notebook.days_period) - 1))
 
                 
