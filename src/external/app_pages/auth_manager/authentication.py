@@ -15,7 +15,7 @@ def streamlit_auth(placeholder_msg):
     with config_file.open('rb') as file:
         config = yaml.load(file, Loader=SafeLoader)
 
-    if 'entities' not in st.session_state:
+    if 'entities' not in st.session_state or not st.session_state.get('entities'):
         #############################################################
         ### GET ALL USERS ###
         #############################################################
@@ -25,23 +25,36 @@ def streamlit_auth(placeholder_msg):
         #############################################################
         messages = resp['messages']
         entities = resp['entities']
-        st.session_state.entities = entities
         st.session_state.messages = messages
+        #############################################################
+        if 'error' in messages:
+            st.session_state.entities = []
+            for msg in messages['error']:
+                placeholder_msg.error(msg, icon='🚨')
+        else:
+            st.session_state.entities = entities
+
+        if 'info' in messages:
+            placeholder_msg.info('\n  - '.join(messages['info']), icon='⚠️')
+        if 'warning' in messages:
+            placeholder_msg.warning('\n  - '.join(messages['warning']), icon='ℹ️')
+        if 'success' in messages:
+            placeholder_msg.success('\n  - '.join(messages['success']), icon='✅')
+        #############################################################
         #############################################################
 
     credentials = {'usernames': {}}
-    if not st.session_state.messages:
-        for user in st.session_state.entities:        
-            credentials['usernames'].setdefault(user.username, {})
-            credentials['usernames'][user.username]['id'] = user.name
-            credentials['usernames'][user.username]['name'] = user.name
-            credentials['usernames'][user.username]['email'] = user.email
-            credentials['usernames'][user.username]['password'] = user.password
-            credentials['usernames'][user.username]['user'] = user
-    else:
-        placeholder_msg.warning('\n\n'.join(st.session_state.messages))
+    for user in st.session_state.entities:        
+        credentials['usernames'].setdefault(user.username, {})
+        credentials['usernames'][user.username]['id'] = user.name
+        credentials['usernames'][user.username]['name'] = user.name
+        credentials['usernames'][user.username]['email'] = user.email
+        credentials['usernames'][user.username]['password'] = user.password
+        credentials['usernames'][user.username]['user'] = user
+    
 
-    if 'credentials' not in st.session_state:
+    if 'credentials' not in st.session_state or \
+            not st.session_state.get('credentials', {}).get('usernames'):
         st.session_state.credentials = credentials
 
     if 'config' not in st.session_state:

@@ -15,7 +15,7 @@ add_page_title(layout="wide")  # Optional method to add title and icon to curren
 
 placeholder_container_msg = st.container()
 
-if st.session_state.get('username'):
+if st.session_state.get('username') and st.session_state.get('credentials', {}).get('usernames'):
     
     controller = Controller()
     

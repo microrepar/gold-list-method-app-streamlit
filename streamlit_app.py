@@ -19,7 +19,6 @@ streamlit_auth(placeholder_msg)
 if st.session_state.get('username'):
     # ---- SIDEBAR ----
     st.session_state.authenticator.logout(f"Logout | {st.session_state.username}", "sidebar")
-        
 
 
 title = st.header('GOLD LIST METHOD')

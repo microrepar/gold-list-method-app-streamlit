@@ -23,12 +23,12 @@ add_page_title(layout="wide")  # Optional method to add title and icon to curren
 placehold_container_msg = st.container()
 placehold_container_msg.empty()
 
-if st.session_state.get('username'):
+if st.session_state.get('username') and st.session_state.get('credentials', {}).get('usernames'):
     username = st.session_state['username']
     user: User = st.session_state['credentials']['usernames'][username]['user']    
 
     controller = Controller()
-    if 'notebook_list' not in st.session_state:
+    if 'notebook_list' not in st.session_state or not st.session_state.get('notebook_list'):
         #############################################################
         # REQUEST NOTEBOOK FIND BY FIELD DEPTH
         #############################################################
@@ -38,12 +38,15 @@ if st.session_state.get('username'):
         }
         resp = controller(request=request)
         messages = resp['messages']
-        entities = resp['entities']
-        st.session_state.notebook_list = entities
+        entities = resp['entities']        
         # RESPONSE MESSAGES##########################################        
         if 'error' in messages:
+            st.session_state.notebook_list = []
             for msg in messages['error']:
                 placehold_container_msg.error(msg, icon='🚨')
+        else:
+            st.session_state.notebook_list = entities
+
         if 'info' in messages:
             placehold_container_msg.info('\n  - '.join(messages['info']), icon='⚠️')
         if 'warning' in messages:
@@ -129,4 +132,4 @@ if st.session_state.get('username'):
     st.session_state.authenticator.logout(f"Logout | {st.session_state.username}", "sidebar")
     st.sidebar.divider()
 else:
-    st.warning("Please access **[main page](/)** and enter your username and password.")
+    st.warning("Please access **[Home page](/)** and enter your username and password.")

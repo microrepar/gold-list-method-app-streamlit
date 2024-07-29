@@ -11,7 +11,7 @@ st.set_page_config(layout="wide")
 add_page_title(layout="wide")
 placeholder_msg = st.empty()
 
-if st.session_state.get('username'):
+if st.session_state.get('username') and st.session_state.get('credentials', {}).get('usernames'):
     # ---- SIDEBAR ----
     st.session_state.authenticator.logout(f"Logout | {st.session_state.username}", "sidebar")
     
@@ -87,4 +87,4 @@ if st.session_state.get('username'):
         st.markdown(':red[Atteption! There are no registred users.]')
 
 else:
-    st.warning("Please access **[main page](/)** and enter your username and password.")
+    st.warning("Please access **[Home page](/)** and enter your username and password.")
