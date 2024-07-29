@@ -71,7 +71,8 @@ class ApiPageSectionRepository(PageSectionRepository):
         pagesection_dict = {k: v for k, v in pagesection_dict.items() if v}
         
         response = requests.post(url, headers=self.headers, json=pagesection_dict)
-        response.raise_for_status()
+        if response.status_code != 200:
+            raise Exception(response.json().get('message'))
         pagesection_dict = response.json()
 
         sl_list = []
