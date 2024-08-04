@@ -39,7 +39,7 @@ class ApiSentenceLabelRepository(SentenceLabelRepository):
             id_ = response_json.get('id'),
             updated_at = string_to_date(response_json.get('updated_at')),
             created_at = string_to_date(response_json.get('created_at')),
-            memorialized = response_json.get('memorialized'),
+            memorized = response_json.get('memorized'),
             translation = response_json.get('translation'),
             sentencetranslation=entity.sentencetranslation
         )
@@ -63,7 +63,7 @@ class ApiSentenceLabelRepository(SentenceLabelRepository):
             id_ = response_json.get('id'),
             updated_at = string_to_date(response_json.get('updated_at')),
             created_at = string_to_date(response_json.get('created_at')),
-            memorialized = response_json.get('memorialized'),
+            memorized = response_json.get('memorized'),
             translation = response_json.get('translation'),
             sentencetranslation=entity.sentencetranslation,
             pagesection=entity.pagesection
@@ -105,7 +105,7 @@ class ApiSentenceLabelRepository(SentenceLabelRepository):
                 created_at=string_to_date(sentencelabel_dict.get('created_at')),
                 updated_at=string_to_date(sentencelabel_dict.get('updated_at')),
                 translation=sentencelabel_dict.get('translation'),
-                memorialized=sentencelabel_dict.get('memorialized'),
+                memorized=sentencelabel_dict.get('memorized'),
                 pagesection=entity.pagesection,
                 sentencetranslation=SentenceTranslation(id_=sentencelabel_dict.get('sentencetranslation'))
             )

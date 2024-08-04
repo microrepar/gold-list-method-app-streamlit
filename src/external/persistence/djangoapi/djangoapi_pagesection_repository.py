@@ -91,7 +91,7 @@ class ApiPageSectionRepository(PageSectionRepository):
                     distillation_actual=pagesection_dict.get('distillation_actual')
                 ),
                 translation=sentencelabel_dict.get('translation'),
-                memorialized=sentencelabel_dict.get('memorialized')
+                memorized=sentencelabel_dict.get('memorized')
             )
             sentencetranslation_dict = sentencelabel_dict.get('sentencetranslation')
             sentencetranslation = SentenceTranslation(
@@ -208,7 +208,7 @@ class ApiPageSectionRepository(PageSectionRepository):
                     distillation_actual=pagesection_dict.get('distillation_actual')
                 ),
                 translation=sentencelabel_dict.get('translation'),
-                memorialized=sentencelabel_dict.get('memorialized')
+                memorized=sentencelabel_dict.get('memorized')
             )
             sentencetranslation_dict = sentencelabel_dict.get('sentencetranslation')
             sentencetranslation = SentenceTranslation(
@@ -379,7 +379,7 @@ class ApiPageSectionRepository(PageSectionRepository):
                     updated_at=string_to_date(sentencelabel_dict.get('updated_at')),
                     pagesection=sentencelabel_dict.get('pagesection'),
                     translation=sentencelabel_dict.get('translation'),
-                    memorialized=sentencelabel_dict.get('memorialized')
+                    memorized=sentencelabel_dict.get('memorized')
                 )
                 sentencetranslation_dict = sentencelabel_dict.get('sentencetranslation')
                 sentencetranslation = SentenceTranslation(

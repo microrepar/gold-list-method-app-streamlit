@@ -39,7 +39,7 @@
             - id: Long
             - created_at: String
             - translated: String
-            - memorialized: Boolean
+            - memorized: Boolean
         }
         
         class SentenceTranslation {

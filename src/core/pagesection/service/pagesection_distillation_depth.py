@@ -30,11 +30,11 @@ class PageSectionDistillationDepthService(UseCase):
         entity_clone.group = NEXT_GROUP.get(entity.group.value)
         entity_clone.set_distillation_at()
         entity_clone.distillation_actual = None
-        entity_clone.sentencelabels = [sl.clone() for sl in entity.sentencelabels if sl.memorialized is False]
+        entity_clone.sentencelabels = [sl.clone() for sl in entity.sentencelabels if not sl.memorized]
         for sl in entity_clone.sentencelabels:            
             sl.pagesection = entity_clone
             sl.translation = ''
-            sl.memorialized = False
+            sl.memorized = False
         result.error_msg = entity_clone.validate()
         if entity_clone.group is None:
             result.error_msg = f'Not exists Group {entity.group}'
@@ -66,7 +66,7 @@ class PageSectionDistillationDepthService(UseCase):
             
             entity.distillated = False
             for sl in entity.sentencelabels:
-                sl.memorialized = False
+                sl.memorized = False
 
             if updated_pagesection:
                 entity = self.repository.update_depth(entity)

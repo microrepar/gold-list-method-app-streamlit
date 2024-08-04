@@ -29,7 +29,7 @@ def get_group_dataframe(pagesection):
 
     if pagesection:
         df['translated_sentences'] = [sl.translation for sl in pagesection.sentencelabels]
-        df['remembered'] = [sl.memorialized for sl in pagesection.sentencelabels]
+        df['remembered'] = [sl.memorized for sl in pagesection.sentencelabels]
     else:
         df['translated_sentences'] = ''
         df['remembered'] = False
@@ -260,7 +260,7 @@ if st.session_state.get('username') and st.session_state.get('credentials', {}).
                 sentencelabel_updated_list = []
                 for sl, dist_update_dict in zip(pagesection_group.sentencelabels, list(df_update.T.to_dict().values())):
                     sl.translation = dist_update_dict['translated_sentences']
-                    sl.memorialized = dist_update_dict['remembered']
+                    sl.memorized = dist_update_dict['remembered']
                     sentencelabel_updated_list.append(sl)
 
                 ###############################################################
@@ -317,7 +317,7 @@ if st.session_state.get('username') and st.session_state.get('credentials', {}).
                     for sl, dist_update_dict in zip(pagesection_group.sentencelabels, 
                                                     list(df_distilled.T.to_dict().values())):
                         sl.translation = dist_update_dict['translated_sentences']
-                        sl.memorialized = dist_update_dict['remembered']
+                        sl.memorized = dist_update_dict['remembered']
                         sentencelabel_distilled_list.append(sl)
 
                     ###############################################################

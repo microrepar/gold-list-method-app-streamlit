@@ -12,7 +12,7 @@ class SentenceLabel(Entity):
                  sentencetranslation : SentenceTranslation=None,
                  pagesection        : 'PageSection'=None, # type: ignore
                  translation         : str=None,
-                 memorialized        : bool=None
+                 memorized        : bool=None
                  ):
         self.id                   = id_
         self.created_at           = created_at
@@ -20,12 +20,12 @@ class SentenceLabel(Entity):
         self.sentencetranslation = sentencetranslation
         self.pagesection         = pagesection
         self.translation          = translation
-        self.memorialized         = memorialized
+        self.memorized         = memorized
 
     def clone(self): # type: ignore
         return SentenceLabel(
             translation=self.translation,
-            memorialized=self.memorialized,
+            memorized=self.memorized,
             sentencetranslation=self.sentencetranslation.clone()
         )
         
@@ -38,7 +38,7 @@ class SentenceLabel(Entity):
                 'sentencetranslation' : self.sentencetranslation.mother_language_sentence,
                 'pagesection'         : self.pagesection.id,
                 'translation'         : self.translation,
-                'memorialized'        : self.memorialized,
+                'memorized'        : self.memorized,
             }
         ]
     
@@ -51,7 +51,7 @@ class SentenceLabel(Entity):
             'sentencelabel_created_at'          : self.created_at,
             'sentencelabel_updated_at'          : self.updated_at,
             'sentencelabel_translation'         : self.translation,
-            'sentencelabel_memorialized'        : self.memorialized,
+            'sentencelabel_memorized'        : self.memorized,
             'sentencelabel_sentencetranslation' : st_to_dict_with_prefix
         }
 
@@ -73,7 +73,7 @@ class SentenceLabel(Entity):
             'sentencetranslation'    : sentencetranslation_dict,
             'pagesection_id'         : pagesection_id,
             'translation'            : self.translation,
-            'memorialized'           : self.memorialized,
+            'memorized'           : self.memorized,
         }
     
     def __repr__(self):
@@ -85,7 +85,7 @@ class SentenceLabel(Entity):
                 f'sentencetranslation={self.sentencetranslation}, '
                 f'pagesection={self.pagesection}, '
                 f'translation={self.translation}, '
-                f'memorialized={self.memorialized}'
+                f'memorized={self.memorized}'
             f')'
         )
     

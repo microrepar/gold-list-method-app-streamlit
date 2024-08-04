@@ -187,10 +187,10 @@ if st.session_state.get('username') and st.session_state.get('credentials', {}).
             
             placehold_btn_insert = st.empty()
 
-            submited =  placehold_btn_insert.form_submit_button(
-                "INSERT NEW LIST", type="primary", use_container_width=True,
-                disabled=False if selected_pagesection_day is None else True
-            )
+        submited =  placehold_btn_insert.form_submit_button(
+            "INSERT NEW LIST", type="primary", use_container_width=True,
+            disabled=False if selected_pagesection_day is None else True
+        )
 
         if submited:
             if 'retry_df_result' in st.session_state:
