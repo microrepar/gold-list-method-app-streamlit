@@ -28,14 +28,15 @@ def get_group_dataframe(pagesection):
                         for s in sentencelabels], ignore_index=True)
 
     if pagesection:
-        df['translated_sentences'] = [sl.translation for sl in pagesection.sentencelabels]
+        df['translated_sentences'] = [{None: ''}.get(sl.translation, sl.translation) for sl in pagesection.sentencelabels]
         df['remembered'] = [sl.memorized for sl in pagesection.sentencelabels]
     else:
         df['translated_sentences'] = ''
         df['remembered'] = False
     return df
-st.set_page_config(layout='wide')
 
+
+st.set_page_config(layout='wide')
 
 placeholder_container_msg = st.container()
 controller = Controller()
